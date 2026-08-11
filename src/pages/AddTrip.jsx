@@ -90,20 +90,10 @@ export default function AddTrip({ people, clanId }) {
     if (!itemPrice || Number(itemPrice) <= 0) missing.push('price')
     if (itemShare.length === 0) missing.push('share')
     if (missing.length > 0) { triggerShake(missing); return }
-    const newItem = {
-      id: `item-${Date.now()}-${Math.random()}`,
-      name: itemName.trim(),
-      price: Number(itemPrice),
-      shared_by: itemShare,
-    }
-    setItemDrafts([...itemDrafts, newItem])
+    setItemDrafts([...itemDrafts, { name: itemName.trim(), price: Number(itemPrice), shared_by: itemShare }])
     setItemName('')
     setItemPrice('')
     itemNameInputRef.current?.focus()
-  }
-
-  function removeItem(idToRemove) {
-    setItemDrafts((prev) => prev.filter((it) => it.id !== idToRemove))
   }
 
   async function save() {
@@ -178,7 +168,7 @@ export default function AddTrip({ people, clanId }) {
               <p className="sec-lbl">Added Items ({itemDrafts.length})</p>
               <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 max-h-42 overflow-y-auto custom-scrollbar">
                 {itemDrafts.map((it, idx) => (
-                  <div key={it.id || idx} className="px-3 py-2.5 text-xs flex justify-between items-center gap-3">
+                  <div key={idx} className="px-3 py-2.5 text-xs flex justify-between items-center gap-3">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <span className="w-5 h-5 rounded-md bg-zinc-800 border border-zinc-700/60 text-white font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
                         {idx + 1}
@@ -192,12 +182,7 @@ export default function AddTrip({ people, clanId }) {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="font-mono text-blue-400 font-semibold">₹{formatINR(it.price)}</span>
-                      <button
-                        type="button"
-                        className="icon-btn icon-btn-danger"
-                        onClick={() => removeItem(it.id)}
-                        title="Delete Item"
-                      >
+                      <button className="icon-btn icon-btn-danger text-zinc-400" onClick={() => setItemDrafts(itemDrafts.filter((_, i) => i !== idx))}>
                         <div className="squish"></div>
                         <IconTrash className="w-3.5 h-3.5" />
                       </button>
