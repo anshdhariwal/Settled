@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { IconPlus, IconTrash, IconPencil } from '../components/icons'
-import { formatINR, formatDOB } from '../lib/formatINR'
+import { formatINR, formatDOB, isValidDOB } from '../lib/formatINR'
 
 export default function Members({ members, balances, memberId, currentMember, clanId, onRefresh }) {
   const [newMemberName, setNewMemberName] = useState('')
@@ -10,6 +10,12 @@ export default function Members({ members, balances, memberId, currentMember, cl
   const [showLeaderModal, setShowLeaderModal] = useState(false)
   const [leaderDob, setLeaderDob] = useState('')
   const [leaderError, setLeaderError] = useState('')
+  const [shakeDob, setShakeDob] = useState(false)
+
+  function triggerDobShake() {
+    setShakeDob(true)
+    setTimeout(() => setShakeDob(false), 420)
+  }
 
   async function handleAddMember() {
     if (!newMemberName.trim()) return
@@ -31,12 +37,14 @@ export default function Members({ members, balances, memberId, currentMember, cl
   }
 
   async function handleVerifyLeaderDob() {
-    if (!leaderDob || leaderDob.trim().length < 10) {
-      setLeaderError('Enter full DOB in DD-MM-YYYY format.')
+    if (!isValidDOB(leaderDob.trim())) {
+      triggerDobShake()
+      setLeaderError('Enter valid DOB (DD-MM-YYYY) between 01-01-1500 and 31-12-2500.')
       return
     }
     const { data: clanData } = await supabase.from('clans').select('passcode').eq('id', clanId).single()
     if (!clanData?.passcode || leaderDob.trim() !== clanData.passcode) {
+      triggerDobShake()
       setLeaderError('Incorrect Leader DOB. Access denied.')
       return
     }
@@ -178,7 +186,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-zinc-300">Leader DOB (DD-MM-YYYY)</label>
               <input
-                className="settled-input font-mono text-center tracking-wider text-base"
+                className={`settled-input font-mono text-center tracking-wider text-base ${shakeDob ? 'field-shake' : ''}`}
                 value={leaderDob}
                 onChange={(e) => {
                   setLeaderDob(formatDOB(e.target.value))

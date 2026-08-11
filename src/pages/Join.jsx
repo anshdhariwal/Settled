@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Shell, Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconSuccessTick } from '../components/icons'
-import { formatDOB } from '../lib/formatINR'
+import { formatDOB, isValidDOB } from '../lib/formatINR'
 
 export default function Join({ onEnter }) {
   const navigate = useNavigate()
@@ -21,6 +21,12 @@ export default function Join({ onEnter }) {
   const [showLeaderModal, setShowLeaderModal] = useState(false)
   const [leaderDob, setLeaderDob] = useState('')
   const [leaderError, setLeaderError] = useState('')
+  const [shakeDob, setShakeDob] = useState(false)
+
+  function triggerDobShake() {
+    setShakeDob(true)
+    setTimeout(() => setShakeDob(false), 420)
+  }
 
   function showToastError(msg) {
     setError(msg)
@@ -108,11 +114,13 @@ export default function Join({ onEnter }) {
   }
 
   async function handleVerifyLeaderDob() {
-    if (!leaderDob || leaderDob.trim().length < 10) {
-      setLeaderError('Enter full DOB in DD-MM-YYYY format.')
+    if (!isValidDOB(leaderDob.trim())) {
+      triggerDobShake()
+      setLeaderError('Enter valid DOB (DD-MM-YYYY) between 01-01-1500 and 31-12-2500.')
       return
     }
     if (!clan?.passcode || leaderDob.trim() !== clan.passcode) {
+      triggerDobShake()
       setLeaderError('Incorrect Leader DOB. Access denied.')
       return
     }
@@ -292,7 +300,7 @@ export default function Join({ onEnter }) {
 
             <Field label="Leader DOB (DD-MM-YYYY)">
               <input
-                className="settled-input font-mono text-center tracking-wider text-base"
+                className={`settled-input font-mono text-center tracking-wider text-base ${shakeDob ? 'field-shake' : ''}`}
                 value={leaderDob}
                 onChange={(e) => {
                   setLeaderDob(formatDOB(e.target.value))

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Shell, Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconCopy, IconSuccessTick, IconPlus, IconClose } from '../components/icons'
-import { formatDOB } from '../lib/formatINR'
+import { formatDOB, isValidDOB } from '../lib/formatINR'
 
 const PENDING_KEY = 'settled_pending_created_clan'
 
@@ -65,11 +65,17 @@ export default function Create({ onEnter }) {
   const [clanName, setClanName] = useState('')
   const [alias, setAlias] = useState('')
   const [dob, setDob] = useState('')
+  const [shakeDob, setShakeDob] = useState(false)
   const [memberInput, setMemberInput] = useState('')
   const [memberList, setMemberList] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  function triggerDobShake() {
+    setShakeDob(true)
+    setTimeout(() => setShakeDob(false), 420)
+  }
 
   function showToastError(msg) {
     setError(msg)
@@ -114,8 +120,9 @@ export default function Create({ onEnter }) {
       showToastError('Please fill in clan name and your name.')
       return
     }
-    if (!dob.trim() || dob.trim().length < 10) {
-      showToastError('Please enter a valid Date of Birth (DD-MM-YYYY).')
+    if (!isValidDOB(dob.trim())) {
+      triggerDobShake()
+      showToastError('Enter valid DOB (DD-MM-YYYY) between 01-01-1500 and 31-12-2500.')
       return
     }
     setError('')
@@ -237,7 +244,7 @@ export default function Create({ onEnter }) {
           </Field>
           <Field label="Leader Date of Birth (DOB)">
             <input
-              className="settled-input font-mono"
+              className={`settled-input font-mono ${shakeDob ? 'field-shake' : ''}`}
               value={dob}
               onChange={(e) => setDob(formatDOB(e.target.value))}
               placeholder="DD-MM-YYYY (e.g. 15-08-2000)"
