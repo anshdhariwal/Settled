@@ -223,9 +223,11 @@ export default function AddTrip({ people, clanId }) {
           <div className="rounded-xl border border-zinc-800 divide-y divide-zinc-800 overflow-hidden">
             {payDrafts.map((p, idx) => (
               <div key={p.person_id} className="flex justify-between items-center p-3">
-                <span className="text-xs font-semibold text-white">{people.find((pp) => pp.id === p.person_id)?.alias}</span>
-                <div className="flex items-stretch settled-input p-0 overflow-hidden gap-0 w-28">
-                  <span className="flex items-center pl-0 pr-2 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
+                <span className="text-sm font-medium text-white truncate min-w-0 flex-1 mr-3">
+                  {people.find((pp) => pp.id === p.person_id)?.alias}
+                </span>
+                <div className="flex items-stretch settled-input p-0 overflow-hidden gap-0 shrink-0 !w-[120px]">
+                  <span className="flex items-center pl-3 pr-1 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
                   <input
                     placeholder="0.00"
                     inputMode="decimal"
