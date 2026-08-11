@@ -189,7 +189,7 @@ export default function AddTrip({ people, clanId }) {
                 {itemDrafts.map((it, idx) => (
                   <div key={idx} className="px-3.5 py-3 flex justify-between items-center gap-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="w-6 h-6 rounded-md bg-zinc-800 border border-zinc-700/60 text-white font-mono text-xs font-bold flex items-center justify-center shrink-0">
+                      <span className="w-6 h-6 rounded-md bg-zinc-800/90 border border-zinc-700/80 text-white text-xs font-bold leading-none flex items-center justify-center shrink-0 select-none shadow-xs">
                         {idx + 1}
                       </span>
                       <div className="min-w-0 flex-1">
