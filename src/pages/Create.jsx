@@ -85,8 +85,12 @@ export default function Create({ onEnter }) {
   function addMemberTag(name) {
     const clean = (name || '').trim().replace(/,/g, '')
     if (!clean) return
-    if (memberList.includes(clean)) {
-      showToastError(`${clean} is already in the list.`)
+    if (alias.trim() && alias.trim().toLowerCase() === clean.toLowerCase()) {
+      showToastError(`"${clean}" is already set as your Leader alias.`)
+      return
+    }
+    if (memberList.some((m) => m.toLowerCase() === clean.toLowerCase())) {
+      showToastError(`"${clean}" is already in the pre-added list.`)
       return
     }
     if (memberList.length >= 9) {
