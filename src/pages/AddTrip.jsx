@@ -165,8 +165,8 @@ export default function AddTrip({ people, clanId }) {
                 value={itemName}
                 onChange={(e) => setItemName(e.target.value)}
               />
-              <div className={`relative col-span-1 flex items-stretch settled-input p-0 overflow-hidden gap-0 ${shakeFields.includes('price') ? 'field-shake' : ''}`}>
-                <span className="flex items-center pl-0 pr-2 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
+              <div className={`relative col-span-1 flex items-center settled-input p-0 overflow-hidden gap-0 ${shakeFields.includes('price') ? 'field-shake' : ''}`}>
+                <span className="flex items-center pl-2 pr-1 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
                 <input
                   placeholder="0.00"
                   inputMode="decimal"
@@ -184,7 +184,7 @@ export default function AddTrip({ people, clanId }) {
             <ShareSelector people={people} selected={itemShare} onChange={setItemShare} shakeShare={shakeFields.includes('share')} />
             <div className="flex justify-end">
               <button
-                className={`btn btn-s btn-sm w-auto px-4 flex items-center gap-1.5 ${
+                className={`btn btn-xs btn-s flex items-center gap-1.5 ${
                   !itemName.trim() || !itemPrice || itemShare.length === 0 ? 'opacity-40 cursor-not-allowed' : ''
                 }`}
                 onClick={addItem}
@@ -222,8 +222,8 @@ export default function AddTrip({ people, clanId }) {
             {payDrafts.map((p, idx) => (
               <div key={p.person_id} className="flex justify-between items-center p-3">
                 <span className="text-xs font-semibold text-white">{people.find((pp) => pp.id === p.person_id)?.alias}</span>
-                <div className="flex items-stretch settled-input p-0 overflow-hidden gap-0 w-28">
-                  <span className="flex items-center pl-0 pr-2 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
+                <div className={`flex items-center settled-input p-0 overflow-hidden gap-0 w-28 ${shakeFields.includes('price') ? 'field-shake' : ''}`}>
+                  <span className="flex items-center pl-2 pr-1 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
                   <input
                     placeholder="0.00"
                     inputMode="decimal"

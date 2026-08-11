@@ -261,8 +261,6 @@ body {
 
 .field-shake {
   animation: fieldShake 0.38s var(--ease-io);
-  border-color: hsl(var(--danger-text)) !important;
-  box-shadow: 0 0 0 2px hsl(var(--danger-text) / 0.15) !important;
 }
 
 
@@ -342,10 +340,21 @@ body {
 }
 
 .btn-sm {
-  height: 34px !important;
-  padding: 0 0.875rem;
-  font-size: var(--tx-xs);
+  height: 42px;
+  padding: 0 1rem;
+  font-size: var(--tx-sm);
   border-radius: var(--r-lg);
+  width: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Truly small standalone button — not paired with inputs */
+.btn-xs {
+  height: 30px;
+  padding: 0 0.75rem;
+  font-size: var(--tx-xs);
+  border-radius: var(--r-md);
   width: auto;
   flex-shrink: 0;
   white-space: nowrap;
