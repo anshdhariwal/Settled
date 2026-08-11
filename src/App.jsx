@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Landing from './pages/landing'
-import Create from './pages/create'
-import Join from './pages/join'
-import Clan from './pages/clan'
+import Landing from './pages/Landing'
+import Create from './pages/Create'
+import Join from './pages/Join'
+import Clan from './pages/Clan'
 
 const CLAN_ID_KEY = 'settled_clan_id'
 const MEMBER_ID_KEY = 'settled_member_id'

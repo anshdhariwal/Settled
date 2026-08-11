@@ -16,12 +16,12 @@ import {
   IconExchange,
   IconChevronRight,
 } from '../components/icons'
-import Overview from './overview'
-import History from './history'
-import Members from './members'
-import Settings from './settings'
-import AddTrip from './addtrip'
-import AddGeneral from './addgeneral'
+import Overview from './Overview'
+import History from './History'
+import Members from './Members'
+import Settings from './Settings'
+import AddTrip from './AddTrip'
+import AddGeneral from './AddGeneral'
 
 export default function Clan({ memberId, onExit, viewOverride }) {
   const { clanId: paramClanId } = useParams()
