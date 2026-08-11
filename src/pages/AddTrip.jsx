@@ -201,12 +201,14 @@ export default function AddTrip({ people, clanId }) {
             <ShareSelector people={people} selected={itemShare} onChange={setItemShare} shakeShare={shakeFields.includes('share')} />
             <div className="flex justify-end">
               <button
-                className={`btn btn-s btn-sm w-auto px-4 flex items-center gap-1.5 ${
-                  !itemName.trim() || !itemPrice || itemShare.length === 0 ? 'opacity-40 cursor-not-allowed' : ''
+                className={`btn btn-sm w-auto px-4 flex items-center gap-1.5 transition-all ${
+                  !itemName.trim() || !itemPrice || itemShare.length === 0
+                    ? 'btn-s opacity-40 cursor-not-allowed'
+                    : 'btn-emerald font-semibold shadow-sm'
                 }`}
                 onClick={addItem}
               >
-                <IconPlus className="w-3 h-3" />
+                <IconPlus className="w-3.5 h-3.5" />
                 <span>Add Item</span>
               </button>
             </div>
