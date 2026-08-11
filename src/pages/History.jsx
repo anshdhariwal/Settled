@@ -1,9 +1,20 @@
 import { useState } from 'react'
-import { IconTrash, IconCart, IconExchange, IconArrowRight } from '../components/icons'
+import { IconTrash, IconCart, IconExchange, IconArrowRight, IconAlertTriangle, IconClose } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
 
-export default function History({ trips, items, shares, payments, generalTx, getMemberName, onDeleteTrip, onDeleteGeneral }) {
+export default function History({ trips, items, shares, payments, generalTx, getMemberName, onViewSummary, onEditTrip, onDeleteTrip, onDeleteGeneral }) {
   const [expandedTripId, setExpandedTripId] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
+
+  function confirmDelete() {
+    if (!deleteConfirm) return
+    if (deleteConfirm.type === 'trip') {
+      onDeleteTrip(deleteConfirm.id)
+    } else {
+      onDeleteGeneral(deleteConfirm.id)
+    }
+    setDeleteConfirm(null)
+  }
 
   return (
     <div className="space-y-4">
@@ -35,6 +46,22 @@ export default function History({ trips, items, shares, payments, generalTx, get
               <div className="text-right">
                 <p className="font-bold font-mono text-amber-400 text-sm">₹{formatINR(tripTotal)}</p>
                 <div className="flex gap-2 justify-end mt-1 items-center">
+                  {onViewSummary && (
+                    <button
+                      onClick={() => onViewSummary(trip)}
+                      className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline"
+                    >
+                      View Summary
+                    </button>
+                  )}
+                  {onEditTrip && (
+                    <button
+                      onClick={() => onEditTrip(trip)}
+                      className="text-xs text-zinc-400 hover:text-white underline"
+                    >
+                      Edit
+                    </button>
+                  )}
                   <button
                     onClick={() => setExpandedTripId(isExpanded ? null : trip.id)}
                     className="text-xs text-zinc-400 hover:text-white underline"
@@ -42,7 +69,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
                     {isExpanded ? 'Hide Items' : `View ${tripItems.length} Items`}
                   </button>
                   <button
-                    onClick={() => onDeleteTrip(trip.id)}
+                    onClick={() => setDeleteConfirm({ type: 'trip', id: trip.id, name: trip.place || 'Buy Trip' })}
                     className="icon-btn icon-btn-danger text-zinc-400 p-1"
                     title="Delete Trip"
                   >
@@ -63,7 +90,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
                       <div key={it.id} className="flex justify-between p-2 rounded bg-zinc-900/60 border border-zinc-800">
                         <div>
                           <p className="font-medium text-white">{it.name}</p>
-                          <p className="text-[10px] text-zinc-500">Shared by: {itemShares.map((s) => getMemberName(s.person_id)).join(', ')}</p>
+                          <p className="text-[10px] text-zinc-350">Shared by: {itemShares.map((s) => getMemberName(s.person_id)).join(', ')}</p>
                         </div>
                         <p className="font-mono text-zinc-300">₹{formatINR(it.price)}</p>
                       </div>
@@ -102,7 +129,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
           <div className="text-right flex items-center gap-3">
             <p className="font-bold font-mono text-amber-400 text-sm">₹{formatINR(tx.amount)}</p>
             <button
-              onClick={() => onDeleteGeneral(tx.id)}
+              onClick={() => setDeleteConfirm({ type: 'general', id: tx.id, name: tx.description || 'General Transaction' })}
               className="icon-btn icon-btn-danger text-zinc-400 p-1"
               title="Delete Transaction"
             >
@@ -112,6 +139,39 @@ export default function History({ trips, items, shares, payments, generalTx, get
           </div>
         </div>
       ))}
+
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-rose-500/30 action-sheet">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                <IconAlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-bold text-sm text-white">Delete Transaction?</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Are you sure you want to delete <strong className="text-zinc-200">"{deleteConfirm.name}"</strong>? This will permanently update all member balances.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end pt-2 border-t border-zinc-800">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="btn btn-s btn-sm shrink-0 w-auto px-4 text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="btn btn-sm shrink-0 w-auto px-4 text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white border border-rose-500"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

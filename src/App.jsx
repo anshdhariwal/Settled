@@ -52,6 +52,7 @@ export default function App() {
         <Route path="/clan/:clanId/settings" element={<Clan memberId={memberId} onExit={exitClan} viewOverride="settings" />} />
         <Route path="/clan/:clanId/add-trip" element={<Clan memberId={memberId} onExit={exitClan} viewOverride="addtrip" />} />
         <Route path="/clan/:clanId/add-general" element={<Clan memberId={memberId} onExit={exitClan} viewOverride="addgeneral" />} />
+        <Route path="/clan/:clanId/trip/:tripId" element={<Clan memberId={memberId} onExit={exitClan} viewOverride="tripsummary" />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

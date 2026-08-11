@@ -237,7 +237,7 @@ export default function Create({ onEnter }) {
             <input
               className="settled-input"
               value={clanName}
-              maxLength={12}
+              maxLength={24}
               onChange={(e) => setClanName(e.target.value)}
               placeholder="e.g. Flat 304 Ration Squad"
               autoFocus

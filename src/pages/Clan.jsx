@@ -23,11 +23,13 @@ import Members from './Members'
 import Settings from './Settings'
 import AddTrip from './AddTrip'
 import AddGeneral from './AddGeneral'
+import TripSummary from './TripSummary'
 
 export default function Clan({ memberId, onExit, viewOverride }) {
-  const { clanId: paramClanId } = useParams()
+  const { clanId: paramClanId, tripId } = useParams()
   const clanId = paramClanId || localStorage.getItem('settled_clan_id')
   const navigate = useNavigate()
+  const [selectedSummaryTrip, setSelectedSummaryTrip] = useState(null)
 
   const [clan, setClan] = useState(null)
   const [members, setMembers] = useState([])
@@ -42,6 +44,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
   const [copiedShareLink, setCopiedShareLink] = useState(false)
   const [toastMsg, setToastMsg] = useState('')
   const [showActionModal, setShowActionModal] = useState(false)
+  const [editingTrip, setEditingTrip] = useState(null)
 
   function triggerToast(msg) {
     setToastMsg(msg)
@@ -79,12 +82,21 @@ export default function Clan({ memberId, onExit, viewOverride }) {
       return
     }
 
+    const validTrips = tripsRes.data || []
+    const validTripIds = new Set(validTrips.map((t) => t.id))
+
+    const validItems = (itemsRes.data || []).filter((i) => validTripIds.has(i.trip_id))
+    const validItemIds = new Set(validItems.map((i) => i.id))
+
+    const validShares = (sharesRes.data || []).filter((sh) => validItemIds.has(sh.item_id))
+    const validPayments = (paymentsRes.data || []).filter((p) => validTripIds.has(p.trip_id))
+
     setClan(clanRes.data)
     setMembers(activeMembers)
-    setTrips(tripsRes.data || [])
-    setItems(itemsRes.data || [])
-    setShares(sharesRes.data || [])
-    setPayments(paymentsRes.data || [])
+    setTrips(validTrips)
+    setItems(validItems)
+    setShares(validShares)
+    setPayments(validPayments)
     setGeneralTx(generalTxRes.data || [])
     setSettlements(settlementsRes.data || [])
   }
@@ -97,7 +109,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
       .on('postgres_changes', { event: '*', schema: 'public' }, () => loadAllData())
       .subscribe()
     return () => supabase.removeChannel(channel)
-  }, [clanId])
+  }, [clanId, tripId])
 
   const balances = useMemo(() => {
     if (members.length === 0) return { net_balances: [], settlements: [], explanation: [] }
@@ -247,9 +259,37 @@ export default function Clan({ memberId, onExit, viewOverride }) {
               onExit={onExit}
             />
           </div>
+        ) : viewOverride === 'tripsummary' || selectedSummaryTrip ? (
+          <div className="screen-transition">
+            {(() => {
+              const summaryTrip = selectedSummaryTrip || trips.find((t) => t.id === tripId) || (trips.length > 0 ? trips[0] : null)
+              if (!summaryTrip) {
+                return (
+                  <div className="settled-card p-8 text-center space-y-3">
+                    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p className="text-zinc-400 text-xs font-mono">Syncing trip details...</p>
+                  </div>
+                )
+              }
+              return (
+                <TripSummary
+                  trip={summaryTrip}
+                  items={items}
+                  shares={shares}
+                  payments={payments}
+                  members={members}
+                  clanId={clanId}
+                  onBack={() => {
+                    setSelectedSummaryTrip(null)
+                    navigate(`/clan/${clanId}`)
+                  }}
+                />
+              )
+            })()}
+          </div>
         ) : viewOverride === 'addtrip' ? (
           <div className="screen-transition">
-            <AddTrip people={members} personId={memberId} clanId={clanId} />
+            <AddTrip people={members} personId={memberId} clanId={clanId} editingTrip={editingTrip} onDoneEditing={() => setEditingTrip(null)} />
           </div>
         ) : viewOverride === 'addgeneral' ? (
           <div className="screen-transition">
@@ -289,7 +329,10 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   onSettle={async (from, to, amount) => {
                     await supabase.from('settlements').insert({ clan_id: clanId, from_person: from, to_person: to, amount })
                   }}
-                  onGoAddTrip={() => navigate(`/clan/${clanId}/add-trip`)}
+                  onGoAddTrip={() => {
+                    setEditingTrip(null)
+                    navigate(`/clan/${clanId}/add-trip`)
+                  }}
                   onGoAddGeneral={() => navigate(`/clan/${clanId}/add-general`)}
                 />
               </div>
@@ -304,11 +347,35 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   payments={payments}
                   generalTx={generalTx}
                   getMemberName={getMemberName}
+                  onViewSummary={(trip) => {
+                    setSelectedSummaryTrip(trip)
+                    navigate(`/clan/${clanId}/trip/${trip.id}`)
+                  }}
+                  onEditTrip={(trip) => {
+                    const tripItems = items.filter((it) => it.trip_id === trip.id).map((it) => ({
+                      id: it.id,
+                      name: it.name,
+                      price: Number(it.price),
+                      shared_by: shares.filter((s) => s.item_id === it.id).map((s) => s.person_id),
+                    }))
+                    const tripPayments = payments.filter((p) => p.trip_id === trip.id)
+                    setEditingTrip({ id: trip.id, place: trip.place, date: trip.date, items: tripItems, payments: tripPayments })
+                    navigate(`/clan/${clanId}/add-trip`)
+                  }}
                   onDeleteTrip={async (id) => {
+                    const tripItems = items.filter((i) => i.trip_id === id)
+                    const itemIds = tripItems.map((i) => i.id)
+                    if (itemIds.length > 0) {
+                      await supabase.from('trip_item_shares').delete().in('item_id', itemIds)
+                    }
+                    await supabase.from('trip_payments').delete().eq('trip_id', id)
+                    await supabase.from('trip_items').delete().eq('trip_id', id)
                     await supabase.from('trips').delete().eq('id', id)
+                    await loadAllData()
                   }}
                   onDeleteGeneral={async (id) => {
                     await supabase.from('general_transactions').delete().eq('id', id)
+                    await loadAllData()
                   }}
                 />
               </div>

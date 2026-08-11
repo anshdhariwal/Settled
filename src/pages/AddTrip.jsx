@@ -58,13 +58,15 @@ function ShareSelector({ people, selected, onChange, shakeShare }) {
   )
 }
 
-export default function AddTrip({ people, clanId }) {
+export default function AddTrip({ people, clanId, personId, editingTrip, onDoneEditing }) {
   const navigate = useNavigate()
   const itemNameInputRef = useRef(null)
   const [step, setStep] = useState('items')
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
-  const [place, setPlace] = useState('')
-  const [itemDrafts, setItemDrafts] = useState([])
+  const [date, setDate] = useState(editingTrip?.date || new Date().toISOString().slice(0, 10))
+  const [place, setPlace] = useState(editingTrip?.place || '')
+  const [itemDrafts, setItemDrafts] = useState(
+    editingTrip?.items ? editingTrip.items.map((it) => ({ name: it.name, price: Number(it.price), shared_by: it.shared_by || [] })) : []
+  )
   const [expandedItemsArea, setExpandedItemsArea] = useState(false)
 
   const [editingItemIdx, setEditingItemIdx] = useState(null)
@@ -76,7 +78,12 @@ export default function AddTrip({ people, clanId }) {
   const [itemPrice, setItemPrice] = useState('')
   const [itemShare, setItemShare] = useState(people.map((p) => p.id))
 
-  const [payDrafts, setPayDrafts] = useState(people.map((p) => ({ person_id: p.id, amount: '' })))
+  const [payDrafts, setPayDrafts] = useState(
+    people.map((p) => {
+      const existingPay = editingTrip?.payments?.find((pay) => pay.person_id === p.id)
+      return { person_id: p.id, amount: existingPay ? String(existingPay.amount) : '' }
+    })
+  )
   const [saving, setSaving] = useState(false)
   const [shakeFields, setShakeFields] = useState([])
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -114,6 +121,7 @@ export default function AddTrip({ people, clanId }) {
 
   function addItem() {
     const missing = []
+    if (!place.trim()) missing.push('place')
     if (!itemName.trim()) missing.push('name')
     if (!itemPrice || Number(itemPrice) <= 0) missing.push('price')
     if (itemShare.length === 0) missing.push('share')
@@ -125,30 +133,65 @@ export default function AddTrip({ people, clanId }) {
   }
 
   async function save() {
+    if (!place.trim()) {
+      triggerShake(['place'])
+      return
+    }
     if (itemDrafts.length === 0 || payTotal !== itemTotal) return
     setSaving(true)
-    const { data: trip } = await supabase
-      .from('trips')
-      .insert({ clan_id: clanId, date, place: place.trim() || 'Buy Trip' })
-      .select()
-      .single()
 
-    for (const it of itemDrafts) {
-      const { data: item } = await supabase
-        .from('trip_items')
-        .insert({ trip_id: trip.id, name: it.name, price: it.price })
-        .select()
-        .single()
-      await supabase.from('trip_item_shares').insert(it.shared_by.map((pid) => ({ item_id: item.id, person_id: pid })))
+    try {
+      let tripId = editingTrip?.id
+      const creatorId = personId || people[0]?.id
+
+      if (editingTrip) {
+        await supabase.from('trips').update({ date, place: place.trim(), created_by: creatorId }).eq('id', editingTrip.id)
+        const existingItemIds = (editingTrip.items || []).map((i) => i.id).filter(Boolean)
+        if (existingItemIds.length > 0) {
+          await supabase.from('trip_item_shares').delete().in('item_id', existingItemIds)
+        }
+        await supabase.from('trip_payments').delete().eq('trip_id', editingTrip.id)
+        await supabase.from('trip_items').delete().eq('trip_id', editingTrip.id)
+      } else {
+        const { data: trip, error: tripErr } = await supabase
+          .from('trips')
+          .insert({ clan_id: clanId, date, place: place.trim(), created_by: creatorId })
+          .select()
+          .single()
+
+        if (tripErr || !trip) {
+          console.error('Error inserting trip:', tripErr)
+          return
+        }
+        tripId = trip.id
+      }
+
+      for (const it of itemDrafts) {
+        const { data: item, error: itemErr } = await supabase
+          .from('trip_items')
+          .insert({ trip_id: tripId, name: it.name, price: it.price })
+          .select()
+          .single()
+
+        if (itemErr || !item) {
+          console.error('Error inserting item:', itemErr)
+          continue
+        }
+        await supabase.from('trip_item_shares').insert(it.shared_by.map((pid) => ({ item_id: item.id, person_id: pid })))
+      }
+
+      const realPayments = payDrafts.filter((p) => Number(p.amount) > 0)
+      if (realPayments.length > 0) {
+        await supabase.from('trip_payments').insert(realPayments.map((p) => ({ trip_id: tripId, person_id: p.person_id, amount: Number(p.amount) })))
+      }
+
+      if (onDoneEditing) onDoneEditing()
+      navigate(`/clan/${clanId}/trip/${tripId}`)
+    } catch (err) {
+      console.error('Error during trip save:', err)
+    } finally {
+      setSaving(false)
     }
-
-    const realPayments = payDrafts.filter((p) => Number(p.amount) > 0)
-    if (realPayments.length > 0) {
-      await supabase.from('trip_payments').insert(realPayments.map((p) => ({ trip_id: trip.id, person_id: p.person_id, amount: Number(p.amount) })))
-    }
-
-    setSaving(false)
-    navigate(`/clan/${clanId}`)
   }
 
   function handleHeaderBack() {
@@ -166,7 +209,7 @@ export default function AddTrip({ people, clanId }) {
           <IconChevronLeft className="w-5 h-5" />
         </button>
         <h2 className="ph-title">
-          {step === 'payments' ? 'Payment Breakdown' : 'New Buy Trip (Itemized)'}
+          {step === 'payments' ? 'Payment Breakdown' : (editingTrip ? 'Edit Buy Trip' : 'New Buy Trip (Itemized)')}
         </h2>
       </div>
 
@@ -187,7 +230,7 @@ export default function AddTrip({ people, clanId }) {
                 <span>Store / Place</span>
               </span>
             }>
-              <input placeholder="e.g. Grocery Mart" maxLength={12} className="settled-input" value={place} onChange={(e) => setPlace(e.target.value)} />
+              <input placeholder="e.g. Grocery Mart (Required)" maxLength={15} className={`settled-input ${shakeFields.includes('place') ? 'field-shake' : ''}`} value={place} onChange={(e) => setPlace(e.target.value)} />
             </Field>
           </div>
 
@@ -480,7 +523,7 @@ export default function AddTrip({ people, clanId }) {
               className="btn btn-p flex-1 disabled:opacity-40"
               onClick={save}
             >
-              {saving ? 'Saving...' : 'Save Buy Trip'}
+              {saving ? (editingTrip ? 'Updating...' : 'Saving...') : (editingTrip ? 'Update Buy Trip' : 'Save Buy Trip')}
             </button>
           </div>
         </div>
