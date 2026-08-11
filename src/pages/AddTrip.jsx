@@ -114,13 +114,23 @@ export default function AddTrip({ people, clanId }) {
     navigate(`/clan/${clanId}`)
   }
 
+  function handleHeaderBack() {
+    if (step === 'payments') {
+      setStep('items')
+    } else {
+      navigate(`/clan/${clanId}`)
+    }
+  }
+
   return (
     <div className="settled-card p-6 space-y-5">
       <div className="ph">
-        <button onClick={() => navigate(`/clan/${clanId}`)} className="back-btn" title="Back">
+        <button onClick={handleHeaderBack} className="back-btn" title="Back">
           <IconChevronLeft className="w-5 h-5" />
         </button>
-        <h2 className="ph-title">New Buy Trip (Itemized)</h2>
+        <h2 className="ph-title">
+          {step === 'payments' ? 'Payment Breakdown' : 'New Buy Trip (Itemized)'}
+        </h2>
       </div>
 
       {step === 'items' && (
@@ -139,14 +149,19 @@ export default function AddTrip({ people, clanId }) {
               <p className="sec-lbl">Added Items ({itemDrafts.length})</p>
               <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 overflow-hidden">
                 {itemDrafts.map((it, idx) => (
-                  <div key={idx} className="px-3 py-2.5 text-xs flex justify-between items-center">
-                    <div>
-                      <p className="font-semibold text-white">{it.name}</p>
-                      <p className="text-[10px] text-zinc-400">
-                        Shared by: {it.shared_by.map((id) => people.find((p) => p.id === id)?.alias).filter(Boolean).join(', ')}
-                      </p>
+                  <div key={idx} className="px-3 py-2.5 text-xs flex justify-between items-center gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <span className="w-5 h-5 rounded-md bg-zinc-800 border border-zinc-700/60 text-zinc-400 font-mono text-[10px] font-semibold flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-white truncate">{it.name}</p>
+                        <p className="text-[10px] text-zinc-400 truncate">
+                          Shared by: {it.shared_by.map((id) => people.find((p) => p.id === id)?.alias).filter(Boolean).join(', ')}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 shrink-0">
                       <span className="font-mono text-blue-400 font-semibold">₹{it.price}</span>
                       <button className="icon-btn text-zinc-500 hover:text-rose-400" onClick={() => setItemDrafts(itemDrafts.filter((_, i) => i !== idx))}>
                         <div className="squish"></div>
