@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
-import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, IconMapPin } from '../components/icons'
+import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, IconMapPin, IconChevronUp, IconChevronDown } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
 
 function ShareSelector({ people, selected, onChange, shakeShare }) {
@@ -65,6 +65,7 @@ export default function AddTrip({ people, clanId }) {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [place, setPlace] = useState('')
   const [itemDrafts, setItemDrafts] = useState([])
+  const [expandedItemsArea, setExpandedItemsArea] = useState(false)
 
   const [itemName, setItemName] = useState('')
   const [itemPrice, setItemPrice] = useState('')
@@ -165,8 +166,26 @@ export default function AddTrip({ people, clanId }) {
 
           {itemDrafts.length > 0 && (
             <div className="space-y-2">
-              <p className="sec-lbl">Added Items ({itemDrafts.length})</p>
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 max-h-48 overflow-y-auto custom-scrollbar">
+              <div className="flex justify-between items-center">
+                <p className="sec-lbl">Added Items ({itemDrafts.length})</p>
+                <button
+                  type="button"
+                  onClick={() => setExpandedItemsArea(!expandedItemsArea)}
+                  className="icon-btn text-zinc-400 hover:text-white transition-all p-1"
+                  title={expandedItemsArea ? "Collapse visible area" : "Double visible items area"}
+                  aria-label={expandedItemsArea ? "Collapse" : "Expand"}
+                >
+                  <div className="squish"></div>
+                  {expandedItemsArea ? (
+                    <IconChevronUp className="w-4 h-4 text-blue-400" />
+                  ) : (
+                    <IconChevronDown className="w-4 h-4 text-zinc-400" />
+                  )}
+                </button>
+              </div>
+              <div className={`rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 transition-all duration-200 overflow-y-auto custom-scrollbar ${
+                expandedItemsArea ? 'max-h-96' : 'max-h-48'
+              }`}>
                 {itemDrafts.map((it, idx) => (
                   <div key={idx} className="px-3.5 py-3 flex justify-between items-center gap-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
