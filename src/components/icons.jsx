@@ -217,3 +217,16 @@ export function IconChevronDown({ className = "w-3.5 h-3.5" }) {
     </svg>
   )
 }
+
+export function IconGripVertical({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="5" r="1.2" fill="currentColor" />
+      <circle cx="9" cy="12" r="1.2" fill="currentColor" />
+      <circle cx="9" cy="19" r="1.2" fill="currentColor" />
+      <circle cx="15" cy="5" r="1.2" fill="currentColor" />
+      <circle cx="15" cy="12" r="1.2" fill="currentColor" />
+      <circle cx="15" cy="19" r="1.2" fill="currentColor" />
+    </svg>
+  )
+}
