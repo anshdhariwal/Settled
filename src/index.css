@@ -5,17 +5,17 @@
   --_brand-clay: 14.8 63.1% 59.6%;
   --_brand-clay-emp: 15.1 54.2% 51.2%;
 
-  --bg-canvas: #0c0c0e;
-  --bg-000: 240 5.9% 10%;
-  --bg-100: 240 4.8% 13.8%;
-  --bg-200: 240 3.7% 15.9%;
-  --bg-3: rgba(255, 255, 255, 0.05);
-  --bg-4: rgba(255, 255, 255, 0.12);
+  --bg-canvas: #0a0a0a;
+  --bg-000: 0 0% 9.5%;
+  --bg-100: 0 0% 13%;
+  --bg-200: 0 0% 16.5%;
+  --bg-3: rgba(255, 255, 255, 0.07);
+  --bg-4: rgba(255, 255, 255, 0.14);
 
-  --text-000: 240 5.9% 96%;
-  --text-200: 240 5% 65%;
-  --text-300: 240 3.8% 46.1%;
-  --text-400: 240 3.7% 32.2%;
+  --text-000: 0 0% 96%;
+  --text-200: 0 0% 84%;
+  --text-300: 0 0% 70%;
+  --text-400: 0 0% 60%;
 
   --accent-brand: #0066cc;
   --accent-brand-emp: #0070f3;
@@ -25,9 +25,9 @@
   --danger-text: 0 67% 59.6%;
   --success-text: 97 75% 32.9%;
 
-  --border-2: rgba(255, 255, 255, 0.08);
-  --border-3: rgba(255, 255, 255, 0.14);
-  --border-4: rgba(255, 255, 255, 0.25);
+  --border-2: rgba(255, 255, 255, 0.10);
+  --border-3: rgba(255, 255, 255, 0.18);
+  --border-4: rgba(255, 255, 255, 0.28);
 
   --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.35);
   --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.6);
@@ -532,7 +532,7 @@ body {
 }
 
 .st-neu {
-  color: #a1a1aa;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d4d4d4;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }

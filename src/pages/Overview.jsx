@@ -6,7 +6,7 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
       <div className="settled-card overflow-hidden">
         <div className="px-4 pt-4 pb-2 flex justify-between items-center">
           <p className="sec-lbl">Net Member Balances</p>
-          <span className="text-[11px] text-zinc-500 font-mono">Live calculation</span>
+          <span className="text-[11px] text-zinc-400 font-mono">Live calculation</span>
         </div>
 
         <div className="p-2 space-y-1">
@@ -25,7 +25,7 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-white truncate">{name}</p>
                     <p className="text-[11px] text-zinc-400 font-mono">
-                      Paid: <span className="text-zinc-300">₹{b.paid}</span> · Owed: <span className="text-zinc-300">₹{b.owed}</span>
+                      Paid: <span className="text-zinc-200">₹{b.paid}</span> · Owed: <span className="text-zinc-200">₹{b.owed}</span>
                     </p>
                   </div>
                 </div>

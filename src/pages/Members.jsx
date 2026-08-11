@@ -31,7 +31,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
       <div className="settled-card overflow-hidden">
         <div className="px-4 pt-4 pb-2 flex items-center justify-between">
           <p className="sec-lbl">Clan Members</p>
-          <span className="text-[11px] font-mono text-zinc-600">{members.length} member{members.length !== 1 ? 's' : ''}</span>
+          <span className="text-[11px] font-mono text-zinc-400">{members.length} member{members.length !== 1 ? 's' : ''}</span>
         </div>
 
         <div className="divide-y divide-zinc-800/60">
@@ -65,7 +65,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-sm font-medium text-white truncate">{member.alias}</span>
                       {isSelf && <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-medium">you</span>}
-                      {member.is_creator && <span className="text-[10px] text-zinc-600 font-medium">leader</span>}
+                      {member.is_creator && <span className="text-[10px] text-zinc-400 font-medium">leader</span>}
                     </div>
                   )}
                 </div>
@@ -73,7 +73,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                 {/* Right side — balance + actions */}
                 <div className="flex items-center gap-2 shrink-0">
                   {balanceObj && (
-                    <span className={`text-xs font-mono font-semibold tabular-nums ${net > 0.005 ? 'text-emerald-400' : net < -0.005 ? 'text-rose-400' : 'text-zinc-600'}`}>
+                    <span className={`text-xs font-mono font-semibold tabular-nums ${net > 0.005 ? 'text-emerald-400' : net < -0.005 ? 'text-rose-400' : 'text-zinc-400'}`}>
                       {net > 0.005 ? `+₹${net}` : net < -0.005 ? `-₹${Math.abs(net)}` : '—'}
                     </span>
                   )}
@@ -90,7 +90,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                       </button>
                       {!member.is_creator && (
                         <button
-                          className="icon-btn text-zinc-600 hover:text-rose-400"
+                          className="icon-btn text-zinc-400 hover:text-rose-400"
                           onClick={() => handleRemoveMember(member.id)}
                           title="Remove"
                         >
