@@ -106,9 +106,33 @@ export default function Clan({ memberId, onExit, viewOverride }) {
 
   const currentMember = members.find((m) => m.id === memberId)
 
+  function safeCopy(text) {
+    if (!text) return
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text))
+    } else {
+      fallbackCopy(text)
+    }
+  }
+
+  function fallbackCopy(text) {
+    try {
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-9999px'
+      textArea.style.top = '-9999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+    } catch (e) {}
+  }
+
   function handleCopyJoinCode() {
     if (!clan?.join_code) return
-    navigator.clipboard.writeText(clan.join_code)
+    safeCopy(clan.join_code)
     setCopiedCode(true)
     setTimeout(() => setCopiedCode(false), 2000)
   }
@@ -130,13 +154,10 @@ export default function Clan({ memberId, onExit, viewOverride }) {
         <div className="max-w-xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/logo.svg" alt="Settled Logo" className="h-7 object-contain" />
+            <div className="w-px h-7 bg-zinc-700/60 shrink-0" aria-hidden="true" />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-bold text-sm tracking-tight text-white">{clan.name}</h1>
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
               </div>
               <p className="text-[11px] text-zinc-500">Member: <span className="text-zinc-300 font-medium">{currentMember?.alias || 'You'}</span></p>
             </div>
@@ -145,7 +166,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopyJoinCode}
-              className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-amber-400 hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
+              className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-blue-400 hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
               title="Click to copy Join Code"
             >
               <span>{clan.join_code}</span>
@@ -258,23 +279,23 @@ export default function Clan({ memberId, onExit, viewOverride }) {
       </main>
 
       {!viewOverride && (
-        <div className="fab-zone orbit">
-          <div className="dot dot1"></div>
-          <div className="dot dot2"></div>
-          <div className="dot dot3"></div>
+        <div className="fixed bottom-6 right-6 z-40">
           <button
-            className="fab"
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-zinc-900/95 border border-zinc-700/80 text-white shadow-2xl hover:bg-zinc-800 active:scale-95 transition-all duration-200 backdrop-blur-md"
             onClick={() => setShowActionModal(!showActionModal)}
             title="Add Expense or Transaction"
           >
-            <IconPlus className="w-6 h-6 stroke-[2.5]" />
+            <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold shrink-0">
+              <IconPlus className="w-3.5 h-3.5 stroke-[2.5]" />
+            </div>
+            <span className="text-xs font-semibold tracking-wide text-zinc-100 pr-1">Add Entry</span>
           </button>
         </div>
       )}
 
       {showActionModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-zinc-700 animate-in fade-in slide-in-from-bottom-5">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-zinc-700/60 action-sheet">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
               <h3 className="font-bold text-sm text-white">Add New Entry</h3>
               <button onClick={() => setShowActionModal(false)} className="back-btn" title="Close">
@@ -290,7 +311,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center">
                     <IconCart className="w-4 h-4" />
                   </div>
                   <div>
@@ -309,7 +330,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center">
                     <IconExchange className="w-4 h-4" />
                   </div>
                   <div>
