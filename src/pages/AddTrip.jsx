@@ -67,6 +67,7 @@ export default function AddTrip({ people, clanId }) {
   const [payDrafts, setPayDrafts] = useState(people.map((p) => ({ person_id: p.id, amount: '' })))
   const [saving, setSaving] = useState(false)
   const [shakeFields, setShakeFields] = useState([])
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
 
   function triggerShake(fields) {
     setShakeFields(fields)
@@ -147,7 +148,7 @@ export default function AddTrip({ people, clanId }) {
           {itemDrafts.length > 0 && (
             <div className="space-y-2">
               <p className="sec-lbl">Added Items ({itemDrafts.length})</p>
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 max-h-56 overflow-y-auto custom-scrollbar">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 max-h-36 overflow-y-auto custom-scrollbar">
                 {itemDrafts.map((it, idx) => (
                   <div key={idx} className="px-3 py-2.5 text-xs flex justify-between items-center gap-3">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -222,7 +223,7 @@ export default function AddTrip({ people, clanId }) {
           <button
             disabled={itemDrafts.length === 0}
             className="btn btn-p disabled:opacity-40 flex items-center justify-center gap-2"
-            onClick={() => setStep('payments')}
+            onClick={() => setShowConfirmModal(true)}
           >
             <span>Next: Payment Breakdown</span>
             <IconChevronRight className="w-4 h-4 text-zinc-950" />
@@ -237,31 +238,34 @@ export default function AddTrip({ people, clanId }) {
             <p className="text-zinc-500">Current Payments Total: <span className={`font-mono font-semibold ${payTotal === itemTotal ? 'text-emerald-400' : 'text-rose-400'}`}>₹{payTotal}</span></p>
           </div>
 
-          <div className="rounded-xl border border-zinc-800 divide-y divide-zinc-800 overflow-hidden">
-            {payDrafts.map((p, idx) => (
-              <div key={p.person_id} className="flex justify-between items-center p-3">
-                <span className="text-sm font-medium text-white truncate min-w-0 flex-1 mr-3">
-                  {people.find((pp) => pp.id === p.person_id)?.alias}
-                </span>
-                <div className="flex items-stretch settled-input p-0 overflow-hidden gap-0 shrink-0 !w-[120px]">
-                  <span className="flex items-center pl-3 pr-1 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
-                  <input
-                    placeholder="0.00"
-                    inputMode="decimal"
-                    className="flex-1 min-w-0 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 pr-2 py-0 h-full text-right"
-                    value={p.amount}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/[^0-9.]/g, '')
-                      const parts = val.split('.')
-                      if (parts.length > 2) return
-                      const next = [...payDrafts]
-                      next[idx] = { ...next[idx], amount: val }
-                      setPayDrafts(next)
-                    }}
-                  />
+          <div className="space-y-2">
+            <p className="sec-lbl">Who paid the bill ?</p>
+            <div className="rounded-xl border border-zinc-800 divide-y divide-zinc-800 overflow-hidden">
+              {payDrafts.map((p, idx) => (
+                <div key={p.person_id} className="flex justify-between items-center p-3">
+                  <span className="text-sm font-medium text-white truncate min-w-0 flex-1 mr-3">
+                    {people.find((pp) => pp.id === p.person_id)?.alias}
+                  </span>
+                  <div className="flex items-stretch settled-input p-0 overflow-hidden gap-0 shrink-0 !w-[120px]">
+                    <span className="flex items-center pl-3 pr-1 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
+                    <input
+                      placeholder="0.00"
+                      inputMode="decimal"
+                      className="flex-1 min-w-0 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 pr-2 py-0 h-full text-right"
+                      value={p.amount}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.]/g, '')
+                        const parts = val.split('.')
+                        if (parts.length > 2) return
+                        const next = [...payDrafts]
+                        next[idx] = { ...next[idx], amount: val }
+                        setPayDrafts(next)
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -273,6 +277,33 @@ export default function AddTrip({ people, clanId }) {
             >
               {saving ? 'Saving...' : 'Save Buy Trip'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-zinc-700/60 action-sheet text-left">
+            <div className="space-y-1.5">
+              <h3 className="font-bold text-base text-white">Proceed to Payment Breakdown?</h3>
+              <p className="text-xs text-zinc-400">
+                You have added <strong className="text-white">{itemDrafts.length} item{itemDrafts.length !== 1 ? 's' : ''}</strong> totaling <strong className="text-blue-400 font-mono">₹{itemTotal}</strong>. Have you added all items from your trip?
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button className="btn btn-s flex-1 text-xs" onClick={() => setShowConfirmModal(false)}>
+                Add More Items
+              </button>
+              <button
+                className="btn btn-p flex-1 text-xs font-semibold"
+                onClick={() => {
+                  setShowConfirmModal(false)
+                  setStep('payments')
+                }}
+              >
+                Proceed
+              </button>
+            </div>
           </div>
         </div>
       )}
