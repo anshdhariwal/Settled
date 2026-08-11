@@ -184,7 +184,7 @@ export default function AddTrip({ people, clanId }) {
                 </button>
               </div>
               <div className={`rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 transition-all duration-200 overflow-y-auto custom-scrollbar ${
-                expandedItemsArea ? 'max-h-96' : 'max-h-48'
+                expandedItemsArea ? 'max-h-92' : 'max-h-46'
               }`}>
                 {itemDrafts.map((it, idx) => (
                   <div key={idx} className="px-3.5 py-3 flex justify-between items-center gap-3">
