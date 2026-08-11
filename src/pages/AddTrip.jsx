@@ -2,42 +2,50 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
-import { IconChevronLeft, IconChevronRight, IconPlus, IconTrash, IconSuccessTick } from '../components/icons'
+import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus } from '../components/icons'
 
 function ShareSelector({ people, selected, onChange }) {
+  const allSelected = selected.length === people.length
   function toggle(id) {
     if (selected.includes(id)) {
+      if (selected.length === 1) return
       onChange(selected.filter((x) => x !== id))
     } else {
       onChange([...selected, id])
     }
   }
 
+  function toggleAll() {
+    if (allSelected) {
+      onChange([people[0]?.id].filter(Boolean))
+    } else {
+      onChange(people.map((p) => p.id))
+    }
+  }
+
   return (
     <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Shared By ({selected.length}/{people.length})</label>
-        <div className="flex gap-2">
-          <button type="button" className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700" onClick={() => onChange(people.map((p) => p.id))}>Select All</button>
-          <button type="button" className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700" onClick={() => onChange([])}>Clear</button>
-        </div>
+      <div className="flex justify-between items-center text-xs">
+        <span className="text-zinc-400 font-medium">Shared By:</span>
+        <button type="button" onClick={toggleAll} className="text-amber-400 font-semibold hover:underline">
+          {allSelected ? 'Clear All' : 'Select All'}
+        </button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {people.map((p) => {
-          const isSelected = selected.includes(p.id)
+          const active = selected.includes(p.id)
           return (
             <button
               type="button"
               key={p.id}
               onClick={() => toggle(p.id)}
-              className={`p-2.5 rounded-xl text-xs font-medium border transition-all text-center flex items-center justify-center gap-1.5 ${
-                isSelected
-                  ? 'bg-amber-500/10 border-amber-500/40 text-amber-300 font-semibold'
-                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800'
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                active
+                  ? 'bg-zinc-100 text-zinc-950 border-white'
+                  : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200'
               }`}
             >
-              {isSelected && <IconSuccessTick className="w-3.5 h-3.5 text-amber-400" />}
-              <span>{p.alias}</span>
+              {p.alias}
             </button>
           )
         })}
@@ -46,34 +54,36 @@ function ShareSelector({ people, selected, onChange }) {
   )
 }
 
-export default function AddTrip({ people, personId, clanId }) {
+export default function AddTrip({ people, clanId }) {
   const navigate = useNavigate()
+  const [step, setStep] = useState('items')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [place, setPlace] = useState('')
   const [itemDrafts, setItemDrafts] = useState([])
+
   const [itemName, setItemName] = useState('')
   const [itemPrice, setItemPrice] = useState('')
   const [itemShare, setItemShare] = useState(people.map((p) => p.id))
+
   const [payDrafts, setPayDrafts] = useState(people.map((p) => ({ person_id: p.id, amount: '' })))
-  const [step, setStep] = useState('items')
   const [saving, setSaving] = useState(false)
 
-  const itemTotal = itemDrafts.reduce((sum, it) => sum + it.price, 0)
-  const payTotal = payDrafts.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+  const itemTotal = itemDrafts.reduce((sum, i) => sum + Number(i.price || 0), 0)
+  const payTotal = payDrafts.reduce((sum, p) => sum + Number(p.amount || 0), 0)
 
   function addItem() {
-    if (!itemName.trim() || !itemPrice || Number(itemPrice) <= 0 || itemShare.length === 0) return
+    if (!itemName.trim() || !itemPrice || Number(itemPrice) <= 0) return
     setItemDrafts([...itemDrafts, { name: itemName.trim(), price: Number(itemPrice), shared_by: itemShare }])
     setItemName('')
     setItemPrice('')
-    setItemShare(people.map((p) => p.id))
   }
 
   async function save() {
+    if (itemDrafts.length === 0 || payTotal !== itemTotal) return
     setSaving(true)
     const { data: trip } = await supabase
-      .from('trips')
-      .insert({ clan_id: clanId, date, place: place.trim(), created_by: personId })
+      .from('buy_trips')
+      .insert({ clan_id: clanId, date, place: place.trim() || 'Buy Trip' })
       .select()
       .single()
 
@@ -117,7 +127,7 @@ export default function AddTrip({ people, personId, clanId }) {
 
           {itemDrafts.length > 0 && (
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Added Items ({itemDrafts.length})</label>
+              <p className="sec-lbl">Added Items ({itemDrafts.length})</p>
               <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 overflow-hidden">
                 {itemDrafts.map((it, idx) => (
                   <div key={idx} className="px-3 py-2.5 text-xs flex justify-between items-center">
@@ -126,7 +136,7 @@ export default function AddTrip({ people, personId, clanId }) {
                       <p className="text-[10px] text-zinc-400">Shared by {it.shared_by.length} members</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="font-mono text-amber-400 font-semibold">₹{it.price}</span>
+                      <span className="font-mono text-blue-400 font-semibold">₹{it.price}</span>
                       <button className="icon-btn text-zinc-500 hover:text-rose-400" onClick={() => setItemDrafts(itemDrafts.filter((_, i) => i !== idx))}>
                         <div className="squish"></div>
                         <IconTrash className="w-3.5 h-3.5" />
@@ -141,7 +151,21 @@ export default function AddTrip({ people, personId, clanId }) {
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
             <div className="grid grid-cols-3 gap-2">
               <input placeholder="Item name (e.g. Milk)" className="settled-input col-span-2" value={itemName} onChange={(e) => setItemName(e.target.value)} />
-              <input placeholder="₹ Price" type="number" className="settled-input font-mono" value={itemPrice} onChange={(e) => setItemPrice(e.target.value)} />
+              <div className="relative col-span-1 flex items-stretch settled-input p-0 overflow-hidden gap-0">
+                <span className="flex items-center pl-0 pr-2 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
+                <input
+                  placeholder="0.00"
+                  inputMode="decimal"
+                  className="flex-1 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-600 pr-2 py-0 h-full"
+                  value={itemPrice}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '')
+                    const parts = val.split('.')
+                    if (parts.length > 2) return
+                    setItemPrice(val)
+                  }}
+                />
+              </div>
             </div>
             <ShareSelector people={people} selected={itemShare} onChange={setItemShare} />
             <button className="btn btn-s btn-sm w-full flex items-center justify-center gap-1.5" onClick={addItem}>
@@ -152,7 +176,7 @@ export default function AddTrip({ people, personId, clanId }) {
 
           <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
             <span className="text-zinc-400 font-medium">Trip Total:</span>
-            <span className="font-mono font-bold text-amber-400 text-sm">₹{itemTotal}</span>
+            <span className="font-mono font-bold text-blue-400 text-sm">₹{itemTotal}</span>
           </div>
 
           <button
@@ -169,7 +193,7 @@ export default function AddTrip({ people, personId, clanId }) {
       {step === 'payments' && (
         <div className="space-y-4">
           <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs space-y-1">
-            <p className="text-zinc-300 font-semibold">Total to Cover: <span className="text-amber-400 font-mono">₹{itemTotal}</span></p>
+            <p className="text-zinc-300 font-semibold">Total to Cover: <span className="text-blue-400 font-mono">₹{itemTotal}</span></p>
             <p className="text-zinc-500">Current Payments Total: <span className={`font-mono font-semibold ${payTotal === itemTotal ? 'text-emerald-400' : 'text-rose-400'}`}>₹{payTotal}</span></p>
           </div>
 
@@ -177,28 +201,31 @@ export default function AddTrip({ people, personId, clanId }) {
             {payDrafts.map((p, idx) => (
               <div key={p.person_id} className="flex justify-between items-center p-3">
                 <span className="text-xs font-semibold text-white">{people.find((pp) => pp.id === p.person_id)?.alias}</span>
-                <input
-                  type="number"
-                  placeholder="₹0"
-                  className="w-28 settled-input text-right font-mono text-xs"
-                  value={p.amount}
-                  onChange={(e) => {
-                    const next = [...payDrafts]
-                    next[idx] = { ...next[idx], amount: e.target.value }
-                    setPayDrafts(next)
-                  }}
-                />
+                <div className="flex items-stretch settled-input p-0 overflow-hidden gap-0 w-28">
+                  <span className="flex items-center pl-0 pr-2 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
+                  <input
+                    placeholder="0.00"
+                    inputMode="decimal"
+                    className="flex-1 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-600 pr-2 py-0 h-full text-right"
+                    value={p.amount}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9.]/g, '')
+                      const parts = val.split('.')
+                      if (parts.length > 2) return
+                      const next = [...payDrafts]
+                      next[idx] = { ...next[idx], amount: val }
+                      setPayDrafts(next)
+                    }}
+                  />
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <button className="btn btn-s flex-1 flex items-center justify-center gap-1" onClick={() => setStep('items')}>
-              <IconChevronLeft className="w-4 h-4" />
-              <span>Items</span>
-            </button>
+          <div className="flex gap-2">
+            <button className="btn btn-s flex-1" onClick={() => setStep('items')}>Back to Items</button>
             <button
-              disabled={saving || payDrafts.every((p) => !p.amount)}
+              disabled={saving || itemDrafts.length === 0 || payTotal !== itemTotal}
               className="btn btn-p flex-1 disabled:opacity-40"
               onClick={save}
             >

@@ -48,14 +48,14 @@ export default function AddGeneral({ people, clanId }) {
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Payer (Who Paid)">
-            <select className="settled-input" value={fromPerson} onChange={(e) => setFromPerson(e.target.value)}>
+            <select className="settled-select" value={fromPerson} onChange={(e) => setFromPerson(e.target.value)}>
               {people.map((p) => (
                 <option key={p.id} value={p.id}>{p.alias}</option>
               ))}
             </select>
           </Field>
           <Field label="Recipient (Who Received)">
-            <select className="settled-input" value={toPerson} onChange={(e) => setToPerson(e.target.value)}>
+            <select className="settled-select" value={toPerson} onChange={(e) => setToPerson(e.target.value)}>
               {people.map((p) => (
                 <option key={p.id} value={p.id}>{p.alias}</option>
               ))}
@@ -63,14 +63,22 @@ export default function AddGeneral({ people, clanId }) {
           </Field>
         </div>
 
-        <Field label="Amount (₹)">
-          <input
-            type="number"
-            placeholder="₹0.00"
-            className="settled-input font-mono text-base"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
+        <Field label="Amount">
+          <div className="flex items-stretch settled-input p-0 overflow-hidden gap-0">
+            <span className="flex items-center pl-0 pr-2 text-zinc-400 font-mono text-sm shrink-0 select-none pointer-events-none">₹</span>
+            <input
+              placeholder="0.00"
+              inputMode="decimal"
+              className="flex-1 bg-transparent outline-none font-mono text-sm text-white placeholder:text-zinc-600 pr-3 py-0 h-full"
+              value={amount}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9.]/g, '')
+                const parts = val.split('.')
+                if (parts.length > 2) return
+                setAmount(val)
+              }}
+            />
+          </div>
         </Field>
 
         <button
