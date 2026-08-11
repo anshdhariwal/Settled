@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { IconTrash } from '../components/icons'
+import { formatINR } from '../lib/formatINR'
 
 export default function History({ trips, items, shares, payments, generalTx, getMemberName, onDeleteTrip, onDeleteGeneral }) {
   const [expandedTripId, setExpandedTripId] = useState(null)
@@ -31,7 +32,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
                 <p className="text-[11px] text-zinc-500">{trip.date} · Created by {getMemberName(trip.created_by)}</p>
               </div>
               <div className="text-right">
-                <p className="font-bold font-mono text-amber-400 text-sm">₹{tripTotal}</p>
+                <p className="font-bold font-mono text-amber-400 text-sm">₹{formatINR(tripTotal)}</p>
                 <div className="flex gap-2 justify-end mt-1 items-center">
                   <button
                     onClick={() => setExpandedTripId(isExpanded ? null : trip.id)}
@@ -63,7 +64,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
                           <p className="font-medium text-white">{it.name}</p>
                           <p className="text-[10px] text-zinc-500">Shared by: {itemShares.map((s) => getMemberName(s.person_id)).join(', ')}</p>
                         </div>
-                        <p className="font-mono text-zinc-300">₹{it.price}</p>
+                        <p className="font-mono text-zinc-300">₹{formatINR(it.price)}</p>
                       </div>
                     )
                   })}
@@ -73,7 +74,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
                 <div className="flex flex-wrap gap-2">
                   {tripPayments.map((p) => (
                     <span key={p.person_id} className="bg-zinc-900 border border-zinc-800 px-2 py-1 rounded text-[11px] text-zinc-300">
-                      {getMemberName(p.person_id)} paid <strong className="text-emerald-400">₹{p.amount}</strong>
+                      {getMemberName(p.person_id)} paid <strong className="text-emerald-400">₹{formatINR(p.amount)}</strong>
                     </span>
                   ))}
                 </div>
@@ -95,7 +96,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
             </p>
           </div>
           <div className="text-right flex items-center gap-3">
-            <p className="font-bold font-mono text-amber-400 text-sm">₹{tx.amount}</p>
+            <p className="font-bold font-mono text-amber-400 text-sm">₹{formatINR(tx.amount)}</p>
             <button
               onClick={() => onDeleteGeneral(tx.id)}
               className="icon-btn icon-btn-danger text-zinc-400 p-1"

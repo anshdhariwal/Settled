@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { IconPlus, IconTrash, IconPencil } from '../components/icons'
+import { formatINR } from '../lib/formatINR'
 
 export default function Members({ members, balances, memberId, currentMember, clanId, onRefresh }) {
   const [newMemberName, setNewMemberName] = useState('')
@@ -74,7 +75,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                 <div className="flex items-center gap-2 shrink-0">
                   {balanceObj && (
                     <span className={`text-xs font-mono font-semibold tabular-nums ${net > 0.005 ? 'text-emerald-400' : net < -0.005 ? 'text-rose-400' : 'text-zinc-400'}`}>
-                      {net > 0.005 ? `+₹${net}` : net < -0.005 ? `-₹${Math.abs(net)}` : '—'}
+                      {net > 0.005 ? `+₹${formatINR(net)}` : net < -0.005 ? `-₹${formatINR(Math.abs(net))}` : '—'}
                     </span>
                   )}
 

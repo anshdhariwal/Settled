@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus } from '../components/icons'
+import { formatINR } from '../lib/formatINR'
 
 function ShareSelector({ people, selected, onChange, shakeShare }) {
   const allSelected = selected.length === people.length
@@ -75,6 +76,7 @@ export default function AddTrip({ people, clanId }) {
 
   const itemTotal = itemDrafts.reduce((sum, i) => sum + Number(i.price || 0), 0)
   const payTotal = payDrafts.reduce((sum, p) => sum + Number(p.amount || 0), 0)
+  const remainingAmount = itemTotal - payTotal
 
   function addItem() {
     const missing = []
@@ -162,7 +164,7 @@ export default function AddTrip({ people, clanId }) {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-mono text-blue-400 font-semibold">₹{it.price}</span>
+                      <span className="font-mono text-blue-400 font-semibold">₹{formatINR(it.price)}</span>
                       <button className="icon-btn icon-btn-danger text-zinc-400" onClick={() => setItemDrafts(itemDrafts.filter((_, i) => i !== idx))}>
                         <div className="squish"></div>
                         <IconTrash className="w-3.5 h-3.5" />
@@ -215,7 +217,7 @@ export default function AddTrip({ people, clanId }) {
 
           <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
             <span className="text-zinc-400 font-medium">Trip Total:</span>
-            <span className="font-mono font-bold text-blue-400 text-sm">₹{itemTotal}</span>
+            <span className="font-mono font-bold text-blue-400 text-sm">₹{formatINR(itemTotal)}</span>
           </div>
 
           <button
@@ -231,9 +233,23 @@ export default function AddTrip({ people, clanId }) {
 
       {step === 'payments' && (
         <div className="space-y-4">
-          <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs space-y-1">
-            <p className="text-zinc-300 font-semibold">Total to Cover: <span className="text-blue-400 font-mono">₹{itemTotal}</span></p>
-            <p className="text-zinc-500">Current Payments Total: <span className={`font-mono font-semibold ${payTotal === itemTotal ? 'text-emerald-400' : 'text-rose-400'}`}>₹{payTotal}</span></p>
+          <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-400 font-medium">Total to Cover:</span>
+              <span className="text-blue-400 font-mono font-bold">₹{formatINR(itemTotal)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-400 font-medium">Current Payments Total:</span>
+              <span className={`font-mono font-bold ${payTotal === itemTotal ? 'text-emerald-400' : 'text-rose-400'}`}>
+                ₹{formatINR(payTotal)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center pt-1.5 border-t border-zinc-800/80">
+              <span className="text-zinc-400 font-medium">Remaining Amount:</span>
+              <span className={`font-mono font-bold ${remainingAmount === 0 ? 'text-emerald-400' : remainingAmount < 0 ? 'text-amber-400' : 'text-rose-400'}`}>
+                ₹{formatINR(Math.abs(remainingAmount))} {remainingAmount < 0 ? '(Overpaid)' : ''}
+              </span>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -285,7 +301,7 @@ export default function AddTrip({ people, clanId }) {
             <div className="space-y-1.5">
               <h3 className="font-bold text-base text-white">Proceed to Payment Breakdown?</h3>
               <p className="text-xs text-zinc-400">
-                You have added <strong className="text-white">{itemDrafts.length} item{itemDrafts.length !== 1 ? 's' : ''}</strong> totaling <strong className="text-blue-400 font-mono">₹{itemTotal}</strong>. Have you added all items from your trip?
+                You have added <strong className="text-white">{itemDrafts.length} item{itemDrafts.length !== 1 ? 's' : ''}</strong> totaling <strong className="text-blue-400 font-mono">₹{formatINR(itemTotal)}</strong>. Have you added all items from your trip?
               </p>
             </div>
             <div className="flex gap-2 pt-1">

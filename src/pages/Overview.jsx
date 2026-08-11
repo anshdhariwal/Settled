@@ -1,4 +1,5 @@
 import { IconSuccessTick, IconCart, IconExchange } from '../components/icons'
+import { formatINR } from '../lib/formatINR'
 
 export default function Overview({ balances, getMemberName, onSettle, onGoAddTrip, onGoAddGeneral }) {
   return (
@@ -25,7 +26,7 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-white truncate">{name}</p>
                     <p className="text-[11px] text-zinc-400 font-mono">
-                      Paid: <span className="text-zinc-200">₹{b.paid}</span> · Owed: <span className="text-zinc-200">₹{b.owed}</span>
+                      Paid: <span className="text-zinc-200">₹{formatINR(b.paid)}</span> · Owed: <span className="text-zinc-200">₹{formatINR(b.owed)}</span>
                     </p>
                   </div>
                 </div>
@@ -35,7 +36,7 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
                     b.net > 0.005 ? 'st-ok' : b.net < -0.005 ? 'st-err' : 'st-neu'
                   }`}
                 >
-                  {b.net > 0.005 ? `+₹${b.net}` : b.net < -0.005 ? `-₹${Math.abs(b.net)}` : 'settled'}
+                  {b.net > 0.005 ? `+₹${formatINR(b.net)}` : b.net < -0.005 ? `-₹${formatINR(Math.abs(b.net))}` : 'settled'}
                 </span>
               </div>
             )
@@ -66,7 +67,7 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
                   <span className="font-semibold text-rose-400">{getMemberName(s.from)}</span>
                   <span className="text-zinc-500 text-[11px]">pays</span>
                   <span className="font-semibold text-emerald-400">{getMemberName(s.to)}</span>
-                  <span className="font-bold text-blue-400 font-mono text-sm ml-1">₹{s.amount}</span>
+                  <span className="font-bold text-blue-400 font-mono text-sm ml-1">₹{formatINR(s.amount)}</span>
                 </div>
                 <button
                   className="btn btn-s btn-sm text-xs flex items-center gap-1 px-3 hover:border-emerald-500/40 hover:text-emerald-300 transition-all"
