@@ -21,6 +21,18 @@ export default function Join({ onEnter }) {
     setTimeout(() => setError(''), 3500)
   }
 
+  function handleBackClick() {
+    if (step === 'select_identity') {
+      if (isAddingNew && availableMembers.length > 0) {
+        setIsAddingNew(false)
+      } else {
+        setStep('code')
+      }
+    } else {
+      navigate('/')
+    }
+  }
+
   async function handleVerifyCode() {
     if (!code.trim()) {
       showToastError('Enter a join code.')
@@ -93,7 +105,7 @@ export default function Join({ onEnter }) {
     <Shell>
       <div className="settled-card p-5 sm:p-6 space-y-5">
         <div className="ph">
-          <button onClick={() => navigate('/')} className="back-btn" title="Back">
+          <button onClick={handleBackClick} className="back-btn" title="Back">
             <IconChevronLeft className="w-5 h-5" />
           </button>
           <h2 className="ph-title">Join a Clan</h2>
@@ -136,28 +148,43 @@ export default function Join({ onEnter }) {
             {availableMembers.length > 0 && !isAddingNew ? (
               <div className="space-y-3">
                 <Field label="Select Your Identity">
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {availableMembers.map((member) => (
-                      <button
-                        type="button"
-                        key={member.id}
-                        onClick={() => setSelectedMemberId(member.id)}
-                        className={`w-full p-3 rounded-xl text-xs font-semibold text-left border transition-all flex items-center justify-between ${
-                          selectedMemberId === member.id
-                            ? 'bg-amber-500/10 border-amber-500/50 text-amber-300'
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800'
-                        }`}
-                      >
-                        <span>{member.alias}</span>
-                        {selectedMemberId === member.id && <IconSuccessTick className="w-4 h-4 text-amber-400" />}
-                      </button>
-                    ))}
+                  <div className="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1">
+                    {availableMembers.map((member) => {
+                      const isSelected = selectedMemberId === member.id
+                      return (
+                        <button
+                          type="button"
+                          key={member.id}
+                          onClick={() => setSelectedMemberId(member.id)}
+                          className={`w-full p-3 rounded-xl text-xs text-left border transition-all flex items-center justify-between ${
+                            isSelected
+                              ? 'bg-blue-500/10 border-blue-500/50 text-blue-300'
+                              : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 flex items-center justify-center font-bold text-xs">
+                              {member.alias.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-sm text-white">{member.alias}</p>
+                              <p className="text-[11px] text-zinc-400">Claim identity</p>
+                            </div>
+                          </div>
+                          {isSelected ? (
+                            <IconSuccessTick className="w-4 h-4 text-blue-400" />
+                          ) : (
+                            <IconChevronRight className="w-4 h-4 text-zinc-500" />
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
                 </Field>
                 <button
                   type="button"
                   onClick={() => setIsAddingNew(true)}
-                  className="text-xs text-amber-400 hover:underline inline-block pt-1"
+                  className="text-xs text-blue-400 hover:underline inline-block pt-1"
                 >
                   + Name not listed? Add yourself
                 </button>

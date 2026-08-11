@@ -6,7 +6,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Activity History</h3>
+      <p className="sec-lbl">Activity History</p>
 
       {trips.length === 0 && generalTx.length === 0 && (
         <div className="settled-card p-8 text-center text-zinc-500 text-xs">

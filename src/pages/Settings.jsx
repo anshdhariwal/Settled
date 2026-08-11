@@ -25,9 +25,33 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
     setTimeout(() => setSavedMsg(''), 2000)
   }
 
+  function safeCopy(text) {
+    if (!text) return
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text))
+    } else {
+      fallbackCopy(text)
+    }
+  }
+
+  function fallbackCopy(text) {
+    try {
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-9999px'
+      textArea.style.top = '-9999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+    } catch (e) {}
+  }
+
   function handleCopyCode() {
     if (!clan?.join_code) return
-    navigator.clipboard.writeText(clan.join_code)
+    safeCopy(clan.join_code)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -73,7 +97,7 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
 
         <Field label="Shareable Join Code">
           <div className="flex gap-2 items-center">
-            <div className="shrink-0 px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/90 text-center font-mono font-bold tracking-[0.2em] text-amber-400 text-sm">
+            <div className="shrink-0 px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/90 text-center font-mono font-bold tracking-[0.2em] text-blue-400 text-sm">
               {clan.join_code}
             </div>
             <button onClick={handleCopyCode} className="btn btn-s flex-1 flex items-center justify-center gap-1.5">

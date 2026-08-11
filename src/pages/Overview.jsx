@@ -5,7 +5,7 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
     <div className="space-y-5">
       <div className="settled-card p-5 space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Net Member Balances</h3>
+          <p className="sec-lbl">Net Member Balances</p>
           <span className="text-[11px] text-zinc-500 font-mono">Live calculation</span>
         </div>
 
@@ -32,10 +32,10 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
       </div>
 
       {balances.settlements.length > 0 && (
-        <div className="settled-card p-5 space-y-4 border-amber-500/20">
+        <div className="settled-card p-5 space-y-4 border-blue-500/20">
           <div className="flex justify-between items-center">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400">Suggested Settlements</h3>
-            <span className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 font-mono">Greedy Optimal</span>
+            <p className="sec-lbl">Suggested Settlements</p>
+            <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 font-mono">Greedy Optimal</span>
           </div>
 
           <div className="space-y-2.5">
@@ -45,7 +45,7 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
                   <span className="font-semibold text-rose-400">{getMemberName(s.from)}</span>
                   <span className="text-zinc-500 px-1">pays</span>
                   <span className="font-semibold text-emerald-400">{getMemberName(s.to)}</span>
-                  <span className="font-bold text-amber-300 font-mono text-sm ml-2">₹{s.amount}</span>
+                  <span className="font-bold text-blue-400 font-mono text-sm ml-2">₹{s.amount}</span>
                 </div>
                 <button
                   className="btn btn-s btn-sm text-xs flex items-center gap-1"

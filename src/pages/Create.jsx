@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabaseClient'
 import { Shell, Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconCopy, IconSuccessTick, IconPlus, IconClose } from '../components/icons'
 
+const PENDING_KEY = 'settled_pending_created_clan'
+
 function generateJoinCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   let code = ''
@@ -11,16 +13,59 @@ function generateJoinCode() {
   return code
 }
 
+function safeCopy(text) {
+  if (!text) return
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text))
+  } else {
+    fallbackCopy(text)
+  }
+}
+
+function fallbackCopy(text) {
+  try {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed'
+    textArea.style.left = '-9999px'
+    textArea.style.top = '-9999px'
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textArea)
+  } catch (e) {
+    // ignore
+  }
+}
+
+function getStoredPendingState() {
+  try {
+    const raw = sessionStorage.getItem(PENDING_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed && parsed.joinCode && parsed.clanId) {
+        return { step: 'success', result: parsed }
+      }
+    }
+  } catch (e) {
+    // fallback
+  }
+  return { step: 'form', result: null }
+}
+
 export default function Create({ onEnter }) {
   const navigate = useNavigate()
   const memberInputRef = useRef(null)
-  const [step, setStep] = useState('form')
+  const pending = getStoredPendingState()
+
+  const [step, setStep] = useState(pending.step)
+  const [result, setResult] = useState(pending.result)
   const [clanName, setClanName] = useState('')
   const [alias, setAlias] = useState('')
   const [memberInput, setMemberInput] = useState('')
   const [memberList, setMemberList] = useState([])
   const [error, setError] = useState('')
-  const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -100,14 +145,22 @@ export default function Create({ onEnter }) {
         .insert(memberList.map((name) => ({ clan_id: clanData.id, alias: name, is_creator: false })))
     }
 
-    setResult({ clanId: clanData.id, memberId: creatorMember.id, joinCode: joinCode })
+    const createdObj = { clanId: clanData.id, memberId: creatorMember.id, joinCode }
+    try {
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify(createdObj))
+    } catch (e) {
+      // fallback
+    }
+
+    onEnter(clanData.id, creatorMember.id)
+    setResult(createdObj)
     setStep('success')
     setLoading(false)
   }
 
   function handleCopyCode() {
     if (!result?.joinCode) return
-    navigator.clipboard.writeText(result.joinCode)
+    safeCopy(result.joinCode)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -115,21 +168,18 @@ export default function Create({ onEnter }) {
   if (step === 'success' && result) {
     return (
       <Shell>
-        <div className="settled-card p-5 sm:p-6 space-y-6 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mx-auto">
-            <IconSuccessTick className="w-6 h-6 text-emerald-400" />
-          </div>
-          <div className="space-y-1">
+        <div className="settled-card p-5 sm:p-6 space-y-5 text-center">
+          <div className="space-y-1 pt-1">
             <h2 className="ph-title text-white">Clan Created!</h2>
-            <p className="text-zinc-400 text-sm">Share this Join Code with your friends</p>
+            <p className="text-zinc-400 text-xs sm:text-sm">Share this Join Code with your members</p>
           </div>
 
-          <div className="rounded-xl border border-zinc-700/60 bg-zinc-900/90 p-4 flex items-center justify-between gap-3">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-4 flex items-center justify-between gap-3">
             <div className="text-left">
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">Join Code</p>
-              <p className="text-2xl font-black tracking-[0.2em] text-amber-400 font-mono">{result.joinCode}</p>
+              <p className="text-[10px] text-white uppercase tracking-wider font-mono">Join Code</p>
+              <p className="text-xl font-bold tracking-[0.2em] text-blue-400 font-mono">{result.joinCode}</p>
             </div>
-            <button onClick={handleCopyCode} className="btn btn-s btn-sm text-xs flex items-center gap-1.5">
+            <button onClick={handleCopyCode} className="btn btn-s btn-sm shrink-0 w-auto text-xs flex items-center gap-1.5 px-3.5">
               {copied ? <IconSuccessTick className="w-4 h-4 text-emerald-400" /> : <IconCopy className="w-4 h-4" />}
               <span>{copied ? 'Copied!' : 'Copy Code'}</span>
             </button>
@@ -138,6 +188,7 @@ export default function Create({ onEnter }) {
           <button
             className="btn btn-p"
             onClick={() => {
+              sessionStorage.removeItem(PENDING_KEY)
               onEnter(result.clanId, result.memberId)
               navigate(`/clan/${result.clanId}`)
             }}
@@ -209,7 +260,7 @@ export default function Create({ onEnter }) {
                       key={idx}
                       className="toast-msg inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700/80 text-xs text-zinc-200"
                     >
-                      <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-300 font-bold text-[10px] flex items-center justify-center">
+                      <span className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-300 font-bold text-[10px] flex items-center justify-center">
                         {m.charAt(0).toUpperCase()}
                       </span>
                       <span className="font-medium">{m}</span>
