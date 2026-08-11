@@ -38,11 +38,10 @@ function ShareSelector({ people, selected, onChange, shakeShare }) {
               type="button"
               key={p.id}
               onClick={() => toggle(p.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                active
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${active
                   ? 'bg-zinc-200 text-zinc-900 border-zinc-300'
                   : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200'
-              }`}
+                }`}
             >
               {p.alias}
             </button>
@@ -148,11 +147,11 @@ export default function AddTrip({ people, clanId }) {
           {itemDrafts.length > 0 && (
             <div className="space-y-2">
               <p className="sec-lbl">Added Items ({itemDrafts.length})</p>
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 max-h-36 overflow-y-auto custom-scrollbar">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 max-h-42 overflow-y-auto custom-scrollbar">
                 {itemDrafts.map((it, idx) => (
                   <div key={idx} className="px-3 py-2.5 text-xs flex justify-between items-center gap-3">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <span className="w-5 h-5 rounded-md bg-zinc-800 border border-zinc-700/60 text-zinc-400 font-mono text-[10px] font-semibold flex items-center justify-center shrink-0">
+                      <span className="w-5 h-5 rounded-md bg-zinc-800 border border-zinc-700/60 text-white font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
                       <div className="min-w-0 flex-1">
@@ -202,11 +201,10 @@ export default function AddTrip({ people, clanId }) {
             <ShareSelector people={people} selected={itemShare} onChange={setItemShare} shakeShare={shakeFields.includes('share')} />
             <div className="flex justify-end">
               <button
-                className={`btn btn-sm w-auto px-4 flex items-center gap-1.5 transition-all ${
-                  !itemName.trim() || !itemPrice || itemShare.length === 0
+                className={`btn btn-sm w-auto px-4 flex items-center gap-1.5 transition-all ${!itemName.trim() || !itemPrice || itemShare.length === 0
                     ? 'btn-s opacity-40 cursor-not-allowed'
                     : 'btn-emerald font-semibold shadow-sm'
-                }`}
+                  }`}
                 onClick={addItem}
               >
                 <IconPlus className="w-3.5 h-3.5" />
