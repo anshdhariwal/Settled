@@ -108,29 +108,48 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
         </Field>
       </div>
 
-      <div className="pt-4 border-t border-zinc-800 space-y-3">
-        <button className="btn btn-s" onClick={leaveClan}>
-          Leave Clan
-        </button>
-
-        {currentMember?.is_creator && !showDisband && (
-          <button className="btn btn-danger" onClick={() => setShowDisband(true)}>
-            Disband Clan (Leader Only)
-          </button>
-        )}
-
-        {currentMember?.is_creator && showDisband && (
-          <div className="rounded-xl border border-rose-900/80 p-4 space-y-3 bg-rose-950/20">
-            <p className="text-xs text-rose-300">Warning: This will permanently delete the clan and all expense data. Type <strong>DELETE</strong> to confirm.</p>
-            <input className="settled-input" value={confirmDisband} onChange={(e) => setConfirmDisband(e.target.value)} placeholder="Type DELETE" />
-            <div className="flex gap-2">
-              <button className="btn btn-s flex-1" onClick={() => setShowDisband(false)}>Cancel</button>
-              <button disabled={confirmDisband !== 'DELETE'} className="btn btn-danger flex-1 disabled:opacity-40" onClick={disbandClan}>
-                Confirm Disband
-              </button>
+      <div className="space-y-2 pt-2">
+        <p className="sec-lbl">Danger Zone</p>
+        <div className="rounded-xl border border-[rgba(240,136,62,0.35)] bg-zinc-950/60 divide-y divide-zinc-800/80 overflow-hidden">
+          <div className="p-4 flex items-center justify-between gap-4">
+            <div className="min-w-0 flex-1 text-left">
+              <p className="font-semibold text-sm text-white">Leave Clan</p>
+              <p className="text-xs text-zinc-400">Exit this clan. You can rejoin anytime with the code.</p>
             </div>
+            <button className="btn btn-s btn-sm shrink-0 w-auto px-4" onClick={leaveClan}>
+              Leave Clan
+            </button>
           </div>
-        )}
+
+          {currentMember?.is_creator && (
+            <div className="p-4 space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1 text-left">
+                  <p className="font-semibold text-sm text-white">Disband Clan</p>
+                  <p className="text-xs text-zinc-400">Permanently delete this clan and all expense records.</p>
+                </div>
+                {!showDisband && (
+                  <button className="btn btn-danger btn-sm shrink-0 w-auto px-4" onClick={() => setShowDisband(true)}>
+                    Disband Clan
+                  </button>
+                )}
+              </div>
+
+              {showDisband && (
+                <div className="pt-3 border-t border-zinc-800/80 space-y-3">
+                  <p className="text-xs text-zinc-300">Type <strong>DELETE</strong> to confirm permanent disbanding.</p>
+                  <div className="flex gap-2">
+                    <input className="settled-input flex-1" value={confirmDisband} onChange={(e) => setConfirmDisband(e.target.value)} placeholder="Type DELETE" />
+                    <button className="btn btn-s btn-sm px-4" onClick={() => setShowDisband(false)}>Cancel</button>
+                    <button disabled={confirmDisband !== 'DELETE'} className="btn btn-danger btn-sm px-4 disabled:opacity-40" onClick={disbandClan}>
+                      Confirm Disband
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
