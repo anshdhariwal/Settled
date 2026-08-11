@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { IconPlus, IconTrash, IconPencil, IconCrown, IconKey, IconGripVertical } from '../components/icons'
 import { formatINR, formatDOB, isValidDOB } from '../lib/formatINR'
@@ -14,6 +14,10 @@ export default function Members({ members, balances, memberId, currentMember, cl
 
   const [draggingId, setDraggingId] = useState(null)
   const [localNonLeaders, setLocalNonLeaders] = useState(null)
+
+  useEffect(() => {
+    setLocalNonLeaders(null)
+  }, [members])
 
   const leaderMember = members.find((m) => m.is_creator)
   const baseNonLeaders = members.filter((m) => !m.is_creator)
@@ -92,6 +96,9 @@ export default function Members({ members, balances, memberId, currentMember, cl
   }
 
   async function handleRemoveMember(id) {
+    if (localNonLeaders) {
+      setLocalNonLeaders(localNonLeaders.filter((m) => m.id !== id))
+    }
     await supabase.from('clan_members').update({ deleted: true }).eq('id', id)
     onRefresh()
   }
@@ -214,7 +221,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                       </button>
                       {!member.is_creator && (
                         <button
-                          className="icon-btn icon-btn-danger text-zinc-400"
+                          className="icon-btn text-zinc-400 hover:text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/40 transition-colors p-1"
                           onClick={() => handleRemoveMember(member.id)}
                           title="Remove member"
                         >
