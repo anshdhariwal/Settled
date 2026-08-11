@@ -443,6 +443,14 @@ body {
   color: hsl(var(--text-000));
 }
 
+.icon-btn-danger:hover {
+  color: #fb7185 !important;
+}
+
+.icon-btn-danger:hover .squish {
+  background: rgba(244, 63, 94, 0.18) !important;
+}
+
 .icon-btn:hover .squish {
   background: var(--bg-4);
 }

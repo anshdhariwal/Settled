@@ -147,7 +147,7 @@ export default function AddTrip({ people, clanId }) {
           {itemDrafts.length > 0 && (
             <div className="space-y-2">
               <p className="sec-lbl">Added Items ({itemDrafts.length})</p>
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 overflow-hidden">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 max-h-56 overflow-y-auto custom-scrollbar">
                 {itemDrafts.map((it, idx) => (
                   <div key={idx} className="px-3 py-2.5 text-xs flex justify-between items-center gap-3">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -163,7 +163,7 @@ export default function AddTrip({ people, clanId }) {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="font-mono text-blue-400 font-semibold">₹{it.price}</span>
-                      <button className="icon-btn text-zinc-500 hover:text-rose-400" onClick={() => setItemDrafts(itemDrafts.filter((_, i) => i !== idx))}>
+                      <button className="icon-btn icon-btn-danger text-zinc-400" onClick={() => setItemDrafts(itemDrafts.filter((_, i) => i !== idx))}>
                         <div className="squish"></div>
                         <IconTrash className="w-3.5 h-3.5" />
                       </button>

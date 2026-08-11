@@ -41,7 +41,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
                   </button>
                   <button
                     onClick={() => onDeleteTrip(trip.id)}
-                    className="icon-btn text-zinc-500 hover:text-rose-400 p-1"
+                    className="icon-btn icon-btn-danger text-zinc-400 p-1"
                     title="Delete Trip"
                   >
                     <div className="squish"></div>
@@ -98,7 +98,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
             <p className="font-bold font-mono text-amber-400 text-sm">₹{tx.amount}</p>
             <button
               onClick={() => onDeleteGeneral(tx.id)}
-              className="icon-btn text-zinc-500 hover:text-rose-400 p-1"
+              className="icon-btn icon-btn-danger text-zinc-400 p-1"
               title="Delete Transaction"
             >
               <div className="squish"></div>

@@ -90,7 +90,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                       </button>
                       {!member.is_creator && (
                         <button
-                          className="icon-btn text-zinc-400 hover:text-rose-400"
+                          className="icon-btn icon-btn-danger text-zinc-400"
                           onClick={() => handleRemoveMember(member.id)}
                           title="Remove"
                         >
