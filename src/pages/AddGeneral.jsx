@@ -65,7 +65,7 @@ export default function AddGeneral({ people, clanId }) {
 
         <Field label="Amount">
           <div className="flex items-stretch settled-input p-0 overflow-hidden gap-0">
-            <span className="flex items-center pl-3 pr-1 text-zinc-400 font-mono text-sm shrink-0 select-none pointer-events-none">₹</span>
+            <span className="flex items-center pl-0 pr-2 text-zinc-400 font-mono text-sm shrink-0 select-none pointer-events-none">₹</span>
             <input
               placeholder="0.00"
               inputMode="decimal"
