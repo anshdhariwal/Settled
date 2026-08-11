@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Shell, Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconCopy, IconSuccessTick, IconPlus, IconClose } from '../components/icons'
+import { formatDOB } from '../lib/formatINR'
 
 const PENDING_KEY = 'settled_pending_created_clan'
 
@@ -63,6 +64,7 @@ export default function Create({ onEnter }) {
   const [result, setResult] = useState(pending.result)
   const [clanName, setClanName] = useState('')
   const [alias, setAlias] = useState('')
+  const [dob, setDob] = useState('')
   const [memberInput, setMemberInput] = useState('')
   const [memberList, setMemberList] = useState([])
   const [error, setError] = useState('')
@@ -112,12 +114,16 @@ export default function Create({ onEnter }) {
       showToastError('Please fill in clan name and your name.')
       return
     }
+    if (!dob.trim() || dob.trim().length < 10) {
+      showToastError('Please enter a valid Date of Birth (DD-MM-YYYY).')
+      return
+    }
     setError('')
     setLoading(true)
     const joinCode = generateJoinCode()
     const { data: clanData, error: clanError } = await supabase
       .from('clans')
-      .insert({ name: clanName.trim(), join_code: joinCode, passcode: '' })
+      .insert({ name: clanName.trim(), join_code: joinCode, passcode: dob.trim() })
       .select()
       .single()
 
@@ -227,6 +233,16 @@ export default function Create({ onEnter }) {
               value={alias}
               onChange={(e) => setAlias(e.target.value)}
               placeholder="e.g. Ansh (Leader)"
+            />
+          </Field>
+          <Field label="Leader Date of Birth (DOB)">
+            <input
+              className="settled-input font-mono"
+              value={dob}
+              onChange={(e) => setDob(formatDOB(e.target.value))}
+              placeholder="DD-MM-YYYY (e.g. 15-08-2000)"
+              maxLength={10}
+              inputMode="numeric"
             />
           </Field>
           <Field label={`Pre-add Members (Optional) ${memberList.length > 0 ? `· ${memberList.length} Added` : ''}`}>

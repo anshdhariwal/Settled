@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Shell, Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconSuccessTick } from '../components/icons'
+import { formatDOB } from '../lib/formatINR'
 
 export default function Join({ onEnter }) {
   const navigate = useNavigate()
@@ -15,6 +16,11 @@ export default function Join({ onEnter }) {
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Leader DOB verification state
+  const [showLeaderModal, setShowLeaderModal] = useState(false)
+  const [leaderDob, setLeaderDob] = useState('')
+  const [leaderError, setLeaderError] = useState('')
 
   function showToastError(msg) {
     setError(msg)
@@ -97,6 +103,40 @@ export default function Join({ onEnter }) {
         return
       }
       onEnter(clan.id, selectedMemberId)
+      navigate(`/clan/${clan.id}`)
+    }
+  }
+
+  async function handleVerifyLeaderDob() {
+    if (!leaderDob || leaderDob.trim().length < 10) {
+      setLeaderError('Enter full DOB in DD-MM-YYYY format.')
+      return
+    }
+    if (!clan?.passcode || leaderDob.trim() !== clan.passcode) {
+      setLeaderError('Incorrect Leader DOB. Access denied.')
+      return
+    }
+    setLeaderError('')
+    setLoading(true)
+
+    // Find existing creator member
+    const { data: creator } = await supabase
+      .from('clan_members')
+      .select('*')
+      .eq('clan_id', clan.id)
+      .eq('is_creator', true)
+      .maybeSingle()
+
+    if (creator) {
+      onEnter(clan.id, creator.id)
+      navigate(`/clan/${clan.id}`)
+    } else {
+      const { data: newLeader } = await supabase
+        .from('clan_members')
+        .insert({ clan_id: clan.id, alias: 'Leader', is_creator: true })
+        .select()
+        .single()
+      onEnter(clan.id, newLeader.id)
       navigate(`/clan/${clan.id}`)
     }
   }
@@ -212,6 +252,17 @@ export default function Join({ onEnter }) {
               </div>
             )}
 
+            <div className="pt-2 border-t border-zinc-800/80 flex justify-between items-center text-xs">
+              <span className="text-zinc-500">Are you the clan leader?</span>
+              <button
+                type="button"
+                className="text-amber-400 hover:text-amber-300 font-semibold underline"
+                onClick={() => setShowLeaderModal(true)}
+              >
+                Are you the leader?
+              </button>
+            </div>
+
             {error && (
               <p className="toast-msg text-rose-400 text-xs font-medium bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
                 {error}
@@ -228,6 +279,52 @@ export default function Join({ onEnter }) {
           </div>
         )}
       </div>
+
+      {showLeaderModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-amber-500/40 action-sheet text-left">
+            <div className="space-y-1.5">
+              <h3 className="font-bold text-base text-white">Leader Access Verification</h3>
+              <p className="text-xs text-zinc-400">
+                Enter the Leader Date of Birth (DOB) set during clan creation to claim leader privileges.
+              </p>
+            </div>
+
+            <Field label="Leader DOB (DD-MM-YYYY)">
+              <input
+                className="settled-input font-mono text-center tracking-wider text-base"
+                value={leaderDob}
+                onChange={(e) => {
+                  setLeaderDob(formatDOB(e.target.value))
+                  setLeaderError('')
+                }}
+                placeholder="DD-MM-YYYY"
+                maxLength={10}
+                inputMode="numeric"
+                autoFocus
+              />
+            </Field>
+
+            {leaderError && (
+              <p className="text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+                {leaderError}
+              </p>
+            )}
+
+            <div className="flex gap-2 pt-1">
+              <button className="btn btn-s flex-1 text-xs" onClick={() => setShowLeaderModal(false)}>
+                Cancel
+              </button>
+              <button
+                className="btn btn-p flex-1 text-xs font-semibold bg-amber-400 text-zinc-950 hover:bg-amber-300"
+                onClick={handleVerifyLeaderDob}
+              >
+                Verify & Claim Leader
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Shell>
   )
 }

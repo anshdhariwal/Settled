@@ -10,6 +10,7 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
   const [alias, setAlias] = useState(currentMember?.alias || '')
   const [confirmDisband, setConfirmDisband] = useState('')
   const [showDisband, setShowDisband] = useState(false)
+  const [showLeaveModal, setShowLeaveModal] = useState(false)
   const [savedMsg, setSavedMsg] = useState('')
   const [copied, setCopied] = useState(false)
 
@@ -57,6 +58,7 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
   }
 
   async function leaveClan() {
+    setShowLeaveModal(false)
     await supabase.from('clan_members').update({ deleted: true }).eq('id', memberId)
     onExit()
     navigate('/')
@@ -116,7 +118,7 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
               <p className="font-semibold text-sm text-white">Leave Clan</p>
               <p className="text-xs text-zinc-400">Exit this clan. You can rejoin anytime with the code.</p>
             </div>
-            <button className="btn btn-s btn-sm shrink-0 w-auto px-4" onClick={leaveClan}>
+            <button className="btn btn-s btn-sm shrink-0 w-auto px-4" onClick={() => setShowLeaveModal(true)}>
               Leave Clan
             </button>
           </div>
@@ -151,6 +153,27 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
           )}
         </div>
       </div>
+
+      {showLeaveModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-zinc-700/60 action-sheet text-left">
+            <div className="space-y-1.5">
+              <h3 className="font-bold text-base text-white">Leave Clan?</h3>
+              <p className="text-xs text-zinc-400">
+                Are you sure you want to leave <strong className="text-white">{clan.name}</strong>? You can rejoin anytime using the join code <span className="font-mono text-blue-400">{clan.join_code}</span>.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button className="btn btn-s flex-1 text-xs" onClick={() => setShowLeaveModal(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-danger flex-1 text-xs font-semibold" onClick={leaveClan}>
+                Leave Clan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

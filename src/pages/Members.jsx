@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { IconPlus, IconTrash, IconPencil } from '../components/icons'
-import { formatINR } from '../lib/formatINR'
+import { formatINR, formatDOB } from '../lib/formatINR'
 
 export default function Members({ members, balances, memberId, currentMember, clanId, onRefresh }) {
   const [newMemberName, setNewMemberName] = useState('')
   const [editingMemberId, setEditingMemberId] = useState(null)
   const [editAlias, setEditAlias] = useState('')
+  const [showLeaderModal, setShowLeaderModal] = useState(false)
+  const [leaderDob, setLeaderDob] = useState('')
+  const [leaderError, setLeaderError] = useState('')
 
   async function handleAddMember() {
     if (!newMemberName.trim()) return
@@ -24,6 +27,22 @@ export default function Members({ members, balances, memberId, currentMember, cl
 
   async function handleRemoveMember(id) {
     await supabase.from('clan_members').update({ deleted: true }).eq('id', id)
+    onRefresh()
+  }
+
+  async function handleVerifyLeaderDob() {
+    if (!leaderDob || leaderDob.trim().length < 10) {
+      setLeaderError('Enter full DOB in DD-MM-YYYY format.')
+      return
+    }
+    const { data: clanData } = await supabase.from('clans').select('passcode').eq('id', clanId).single()
+    if (!clanData?.passcode || leaderDob.trim() !== clanData.passcode) {
+      setLeaderError('Incorrect Leader DOB. Access denied.')
+      return
+    }
+    setLeaderError('')
+    await supabase.from('clan_members').update({ is_creator: true }).eq('id', memberId)
+    setShowLeaderModal(false)
     onRefresh()
   }
 
@@ -49,24 +68,32 @@ export default function Members({ members, balances, memberId, currentMember, cl
                   {member.alias.charAt(0).toUpperCase()}
                 </div>
 
-                {/* Name / edit row */}
-                <div className="flex-1 min-w-0">
+                {/* Member Info / Edit Form */}
+                <div className="min-w-0 flex-1">
                   {isEditing ? (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <input
-                        className="settled-input flex-1 text-sm"
+                        className="settled-input !h-8 text-xs py-1"
                         value={editAlias}
                         onChange={(e) => setEditAlias(e.target.value)}
                         autoFocus
                       />
-                      <button className="btn btn-s btn-sm shrink-0 w-auto px-3" onClick={() => handleSaveEdit(member.id)}>Save</button>
-                      <button className="btn btn-s btn-sm shrink-0 w-auto px-3" onClick={() => setEditingMemberId(null)}>✕</button>
+                      <button className="btn btn-s btn-sm !h-8 text-xs px-2" onClick={() => handleSaveEdit(member.id)}>Save</button>
+                      <button className="btn btn-s btn-sm !h-8 text-xs px-2" onClick={() => setEditingMemberId(null)}>Cancel</button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-sm font-medium text-white truncate">{member.alias}</span>
-                      {isSelf && <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-medium">you</span>}
-                      {member.is_creator && <span className="text-[10px] text-zinc-400 font-medium">leader</span>}
+                      <p className="font-medium text-sm text-white truncate">{member.alias}</p>
+                      {member.is_creator && (
+                        <span className="text-[10px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20 font-medium">
+                          Leader
+                        </span>
+                      )}
+                      {isSelf && (
+                        <span className="text-[10px] bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20 font-medium">
+                          You
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -93,7 +120,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                         <button
                           className="icon-btn icon-btn-danger text-zinc-400"
                           onClick={() => handleRemoveMember(member.id)}
-                          title="Remove"
+                          title="Remove member"
                         >
                           <div className="squish"></div>
                           <IconTrash className="w-3.5 h-3.5" />
@@ -107,6 +134,18 @@ export default function Members({ members, balances, memberId, currentMember, cl
           })}
         </div>
       </div>
+
+      {!currentMember?.is_creator && (
+        <div className="settled-card p-4 flex items-center justify-between gap-3 border-amber-500/30">
+          <div className="text-left">
+            <p className="text-xs font-semibold text-amber-400">Are you the clan leader?</p>
+            <p className="text-[11px] text-zinc-400">Claim leader access using your DOB</p>
+          </div>
+          <button className="btn btn-s btn-sm text-xs px-3.5 shrink-0 border-amber-500/40 text-amber-300 hover:bg-amber-500/10" onClick={() => setShowLeaderModal(true)}>
+            Claim Leader Access
+          </button>
+        </div>
+      )}
 
       {currentMember?.is_creator && (
         <div className="settled-card p-4 space-y-3">
@@ -122,6 +161,53 @@ export default function Members({ members, balances, memberId, currentMember, cl
               <IconPlus className="w-3.5 h-3.5 text-zinc-950" />
               <span>Add</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {showLeaderModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-amber-500/40 action-sheet text-left">
+            <div className="space-y-1.5">
+              <h3 className="font-bold text-base text-white">Leader Access Verification</h3>
+              <p className="text-xs text-zinc-400">
+                Enter the Leader Date of Birth (DOB) set during clan creation to claim leader privileges.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-zinc-300">Leader DOB (DD-MM-YYYY)</label>
+              <input
+                className="settled-input font-mono text-center tracking-wider text-base"
+                value={leaderDob}
+                onChange={(e) => {
+                  setLeaderDob(formatDOB(e.target.value))
+                  setLeaderError('')
+                }}
+                placeholder="DD-MM-YYYY"
+                maxLength={10}
+                inputMode="numeric"
+                autoFocus
+              />
+            </div>
+
+            {leaderError && (
+              <p className="text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+                {leaderError}
+              </p>
+            )}
+
+            <div className="flex gap-2 pt-1">
+              <button className="btn btn-s flex-1 text-xs" onClick={() => setShowLeaderModal(false)}>
+                Cancel
+              </button>
+              <button
+                className="btn btn-p flex-1 text-xs font-semibold bg-amber-400 text-zinc-950 hover:bg-amber-300"
+                onClick={handleVerifyLeaderDob}
+              >
+                Verify & Claim Leader
+              </button>
+            </div>
           </div>
         </div>
       )}
