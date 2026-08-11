@@ -6,50 +6,40 @@ import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, I
 import { formatINR } from '../lib/formatINR'
 
 function ShareSelector({ people, selected, onChange, shakeShare }) {
-  const allSelected = people.length > 0 && selected.length === people.length
-
-  function togglePerson(id) {
+  const allSelected = selected.length === people.length
+  function toggle(id) {
     if (selected.includes(id)) {
       if (selected.length === 1) return
-      onChange(selected.filter((pId) => pId !== id))
+      onChange(selected.filter((x) => x !== id))
     } else {
       onChange([...selected, id])
     }
   }
 
-  function toggleAll() {
-    if (allSelected) {
-      if (people.length > 0) onChange([people[0].id])
-    } else {
-      onChange(people.map((p) => p.id))
-    }
-  }
-
   return (
-    <div className={`space-y-2 ${shakeShare ? 'field-shake' : ''}`}>
+    <div className={`space-y-1.5 ${shakeShare ? 'field-shake' : ''}`}>
       <div className="flex justify-between items-center">
-        <label className="text-xs font-semibold text-zinc-300">Shared By</label>
+        <label className="text-zinc-400 font-medium text-xs">Shared By</label>
         <button
           type="button"
-          onClick={toggleAll}
-          className="text-[11px] text-blue-400 hover:text-blue-300 font-medium transition-colors"
+          className="text-[11px] text-blue-400 hover:underline"
+          onClick={() => onChange(allSelected ? [people[0]?.id] : people.map((p) => p.id))}
         >
           {allSelected ? 'Deselect All' : 'Select All'}
         </button>
       </div>
-
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar p-1 rounded-lg border border-zinc-800 bg-zinc-900/60">
         {people.map((p) => {
           const active = selected.includes(p.id)
           return (
             <button
               type="button"
               key={p.id}
-              onClick={() => togglePerson(p.id)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              onClick={() => toggle(p.id)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                 active
-                  ? 'bg-blue-500/15 border-blue-500/40 text-blue-300'
-                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                  ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm'
+                  : 'bg-zinc-800/80 text-zinc-400 border border-zinc-700/50 hover:bg-zinc-700/60'
               }`}
             >
               {p.alias}
@@ -63,7 +53,7 @@ function ShareSelector({ people, selected, onChange, shakeShare }) {
 
 export default function AddTrip({ people, clanId }) {
   const navigate = useNavigate()
-  const nameInputRef = useRef(null)
+  const itemNameInputRef = useRef(null)
   const [step, setStep] = useState('items')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [place, setPlace] = useState('')
@@ -96,7 +86,7 @@ export default function AddTrip({ people, clanId }) {
     setItemDrafts([...itemDrafts, { name: itemName.trim(), price: Number(itemPrice), shared_by: itemShare }])
     setItemName('')
     setItemPrice('')
-    setTimeout(() => nameInputRef.current?.focus(), 50)
+    itemNameInputRef.current?.focus()
   }
 
   async function save() {
@@ -196,10 +186,10 @@ export default function AddTrip({ people, clanId }) {
             </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); addItem(); }} className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
             <div className="grid grid-cols-3 gap-2">
               <input
-                ref={nameInputRef}
+                ref={itemNameInputRef}
                 placeholder="Item name (e.g. Milk)"
                 maxLength={40}
                 className={`settled-input col-span-2 ${shakeFields.includes('name') ? 'field-shake' : ''}`}
@@ -217,15 +207,13 @@ export default function AddTrip({ people, clanId }) {
                 <input
                   placeholder="0.00"
                   inputMode="decimal"
-                  maxLength={8}
+                  maxLength={9}
                   className="flex-1 min-w-0 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 pr-2 py-0 h-full"
                   value={itemPrice}
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9.]/g, '')
                     const parts = val.split('.')
                     if (parts.length > 2) return
-                    if (parts[1] && parts[1].length > 2) return
-                    if (val.length > 8) return
                     setItemPrice(val)
                   }}
                   onKeyDown={(e) => {
@@ -240,7 +228,6 @@ export default function AddTrip({ people, clanId }) {
             <ShareSelector people={people} selected={itemShare} onChange={setItemShare} shakeShare={shakeFields.includes('share')} />
             <div className="flex justify-end">
               <button
-                type="button"
                 className={`btn btn-sm w-auto px-4 flex items-center gap-1.5 transition-all ${!itemName.trim() || !itemPrice || itemShare.length === 0
                     ? 'btn-s opacity-40 cursor-not-allowed'
                     : 'btn-emerald font-semibold shadow-sm'
@@ -251,7 +238,7 @@ export default function AddTrip({ people, clanId }) {
                 <span>Add Item</span>
               </button>
             </div>
-          </form>
+          </div>
 
           <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
             <span className="text-zinc-400 font-medium">Trip Total:</span>
