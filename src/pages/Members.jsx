@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { IconPlus, IconTrash, IconPencil, IconCrown, IconKey } from '../components/icons'
+import { IconPlus, IconTrash, IconPencil, IconCrown, IconKey, IconChevronUp, IconChevronDown } from '../components/icons'
 import { formatINR, formatDOB, isValidDOB } from '../lib/formatINR'
 
 export default function Members({ members, balances, memberId, currentMember, clanId, onRefresh }) {
@@ -11,6 +11,10 @@ export default function Members({ members, balances, memberId, currentMember, cl
   const [leaderDob, setLeaderDob] = useState('')
   const [leaderError, setLeaderError] = useState('')
   const [shakeDob, setShakeDob] = useState(false)
+
+  const leaderMember = members.find((m) => m.is_creator)
+  const nonLeaderMembers = members.filter((m) => !m.is_creator)
+  const displayMembers = leaderMember ? [leaderMember, ...nonLeaderMembers] : members
 
   function triggerDobShake() {
     setShakeDob(true)
@@ -33,6 +37,34 @@ export default function Members({ members, balances, memberId, currentMember, cl
 
   async function handleRemoveMember(id) {
     await supabase.from('clan_members').update({ deleted: true }).eq('id', id)
+    onRefresh()
+  }
+
+  async function handleMoveMember(memberIdToMove, direction) {
+    const targetIdx = nonLeaderMembers.findIndex((m) => m.id === memberIdToMove)
+    if (targetIdx === -1) return
+    const swapIdx = targetIdx + direction
+    if (swapIdx < 0 || swapIdx >= nonLeaderMembers.length) return
+
+    const currentMemberObj = nonLeaderMembers[targetIdx]
+    const swapMemberObj = nonLeaderMembers[swapIdx]
+
+    let timeA = currentMemberObj.created_at ? new Date(currentMemberObj.created_at).getTime() : Date.now()
+    let timeB = swapMemberObj.created_at ? new Date(swapMemberObj.created_at).getTime() : Date.now()
+
+    if (timeA === timeB) {
+      timeA = Date.now() + targetIdx * 1000
+      timeB = Date.now() + swapIdx * 1000
+    }
+
+    const isoA = new Date(timeA).toISOString()
+    const isoB = new Date(timeB).toISOString()
+
+    await Promise.all([
+      supabase.from('clan_members').update({ created_at: isoB }).eq('id', currentMemberObj.id),
+      supabase.from('clan_members').update({ created_at: isoA }).eq('id', swapMemberObj.id),
+    ])
+
     onRefresh()
   }
 
@@ -63,11 +95,12 @@ export default function Members({ members, balances, memberId, currentMember, cl
         </div>
 
         <div className="divide-y divide-zinc-800/60">
-          {members.map((member) => {
+          {displayMembers.map((member) => {
             const balanceObj = balances.net_balances.find((nb) => nb.person === member.id)
             const isSelf = member.id === memberId
             const isEditing = editingMemberId === member.id
             const net = balanceObj?.net ?? 0
+            const nonLeaderIndex = nonLeaderMembers.findIndex((m) => m.id === member.id)
 
             return (
               <div key={member.id} className="px-4 py-3 flex items-center gap-3">
@@ -108,12 +141,35 @@ export default function Members({ members, balances, memberId, currentMember, cl
                   )}
                 </div>
 
-                {/* Right side — balance + actions */}
+                {/* Right side — balance + reorder + actions */}
                 <div className="flex items-center gap-2 shrink-0">
                   {balanceObj && (
                     <span className={`text-xs font-mono font-semibold tabular-nums ${net > 0.005 ? 'text-emerald-400' : net < -0.005 ? 'text-rose-400' : 'text-zinc-400'}`}>
                       {net > 0.005 ? `+₹${formatINR(net)}` : net < -0.005 ? `-₹${formatINR(Math.abs(net))}` : '—'}
                     </span>
+                  )}
+
+                  {!member.is_creator && !isEditing && (
+                    <div className="flex items-center gap-0.5 border-r border-zinc-800/80 pr-1.5 mr-0.5">
+                      <button
+                        disabled={nonLeaderIndex === 0}
+                        onClick={() => handleMoveMember(member.id, -1)}
+                        className="icon-btn text-zinc-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed p-1"
+                        title="Move Up"
+                      >
+                        <div className="squish"></div>
+                        <IconChevronUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        disabled={nonLeaderIndex === nonLeaderMembers.length - 1}
+                        onClick={() => handleMoveMember(member.id, 1)}
+                        className="icon-btn text-zinc-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed p-1"
+                        title="Move Down"
+                      >
+                        <div className="squish"></div>
+                        <IconChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   )}
 
                   {currentMember?.is_creator && !isEditing && (

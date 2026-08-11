@@ -201,3 +201,19 @@ export function IconArrowRight({ className = "w-3.5 h-3.5" }) {
     </svg>
   )
 }
+
+export function IconChevronUp({ className = "w-3.5 h-3.5" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 15l-6-6-6 6" />
+    </svg>
+  )
+}
+
+export function IconChevronDown({ className = "w-3.5 h-3.5" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  )
+}
