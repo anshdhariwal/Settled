@@ -1,16 +1,116 @@
-# React + Vite
+# Settled
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+> Modern, multi-member group expense splitting and debt settlement web application.
 
-Currently, two official plugins are available:
+Settled is a fast, responsive web application designed for friends, roommates, and travel groups to effortlessly calculate shared trip expenses, split bill items, track overall balances, and calculate minimal debt settlement transactions.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Multi-Member Clan System**: Create or join clans with unique 6-character join codes and DOB verification for clan leaders.
+- **Seamless Inline Itemized Splitting**: Add trip items with custom per-person split toggles. Inline seamless editing allows modifying item names, prices, and member toggles without popups.
+- **Smart Debt Simplification**: Built-in greedy debt settlement engine (`calculateBalances.js`) that calculates minimal payments between members to settle all group debts in very few transactions.
+- **Drag-Based Reordering**: Drag handle with touch drag support for ordering clan members, locked with static Leader badge at position #1.
+- **Indian INR Currency Formatting**: Full support for Indian currency formatting (`en-IN`) across total expenses, payment summaries, and transactions
+- **Responsive UI**: Glassmorphic dark UI designed for mobile screens and desktop browsers with instant visual feedback.
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Technology Stack
+
+- **Frontend**: React 19, Vite, Vanilla CSS, Tailwind CSS utilities
+- **Icons**: Custom SVG icons (`src/components/icons.jsx`)
+- **Backend & Database**: Supabase (PostgreSQL database, realtime sync, row updates)
+- **Math Engine**: JavaScript based balance calculation and greedy settlement solving script (`src/lib/calculateBalances.js`)
+
+---
+
+## Project Structure
+
+```
+Settled/
+├── src/
+│   ├── components/
+│   │   ├── icons.jsx          # SVG icon system
+│   │   └── layout.jsx         # Responsive Shell container and form Fields
+│   ├── lib/
+│   │   ├── calculateBalances.js  # Pure balance & greedy settlement algorithm
+│   │   ├── formatINR.js          # INR currency and DOB formatting helpers
+│   │   └── supabaseClient.js     # Supabase client initialization
+│   ├── pages/
+│   │   ├── AddGeneral.jsx     # General transaction logger
+│   │   ├── AddTrip.jsx        # Itemized trip expense entry & inline editor
+│   │   ├── Clan.jsx           # Main clan dashboard & payment summary
+│   │   ├── Create.jsx         # Clan creation flow with leader setup
+│   │   ├── History.jsx        # Transaction history log
+│   │   ├── Join.jsx           # Clan join & member selection modal
+│   │   ├── Members.jsx        # Clan member management & drag reordering
+│   │   ├── Overview.jsx       # Individual net balances & breakdown
+│   │   └── Settings.jsx       # Clan settings & danger zone management
+│   ├── App.jsx                # Router & main application entrypoint
+│   ├── index.css              # Core design system tokens & utilities
+│   └── main.jsx               # React DOM render entry
+├── public/                    # Static brand assets and SVGs
+├── index.html                 # HTML5 entrypoint with Google Fonts
+└── vite.config.js             # Vite build configuration
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js**: v18.0.0 or higher
+- **npm**: v9.0.0 or higher
+
+### Installation
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/anshdhariwal/Settled.git
+   cd Settled
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables**:
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:5173` in your browser.
+
+5. **Build for Production**:
+   ```bash
+   npm run build
+   ```
+
+---
+
+## Balance Engine (`calculateBalances.js`)
+
+Settled uses a pure, deterministic calculation engine that processes raw transaction inputs and computes:
+- Net balance for each clan member (`paid - owed`)
+- Total amount spent and total share owed per person
+- Minimal suggested settlement payments generated by greedy debt matching algorithm
+
+---
+
+## License
+
+MIT - see [LICENSE](LICENSE). You can use, modify, and distribute this freely. Keep the copyright notice.
+
+---
+
+Developed by [Ansh Dhariwal](https://github.com/anshdhariwal)
