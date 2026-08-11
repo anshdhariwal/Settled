@@ -69,7 +69,7 @@ export default function AddGeneral({ people, clanId }) {
             <input
               placeholder="0.00"
               inputMode="decimal"
-              className="flex-1 bg-transparent outline-none font-mono text-sm text-white placeholder:text-zinc-600 pr-3 py-0 h-full"
+              className="flex-1 min-w-0 bg-transparent outline-none font-mono text-sm text-white placeholder:text-zinc-500 pr-3 py-0 h-full"
               value={amount}
               onChange={(e) => {
                 const val = e.target.value.replace(/[^0-9.]/g, '')

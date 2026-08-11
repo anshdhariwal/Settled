@@ -185,9 +185,9 @@ body {
   border-color: var(--border-4);
 }
 
-.settled-input:focus, .input:focus {
+.settled-input:focus, .input:focus, .settled-input:focus-within {
   border-color: var(--border-4);
-  box-shadow: 0 0 0 2px hsl(60 12.5% 96.9% / 8%);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
 }
 
 .settled-input::placeholder, .input::placeholder {

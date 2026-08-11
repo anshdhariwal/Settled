@@ -172,7 +172,7 @@ export default function AddTrip({ people, clanId }) {
                 <input
                   placeholder="0.00"
                   inputMode="decimal"
-                  className="flex-1 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-600 pr-2 py-0 h-full"
+                  className="flex-1 min-w-0 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 pr-2 py-0 h-full"
                   value={itemPrice}
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9.]/g, '')
@@ -231,7 +231,7 @@ export default function AddTrip({ people, clanId }) {
                   <input
                     placeholder="0.00"
                     inputMode="decimal"
-                    className="flex-1 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-600 pr-2 py-0 h-full text-right"
+                    className="flex-1 min-w-0 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 pr-2 py-0 h-full text-right"
                     value={p.amount}
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9.]/g, '')
