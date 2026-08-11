@@ -59,8 +59,20 @@ export default function Clan({ memberId, onExit, viewOverride }) {
       return
     }
 
+    const activeMembers = membersRes.data || []
+    const validMember = activeMembers.find((m) => m.id === memberId)
+
+    if (!memberId || !validMember) {
+      if (clanRes.data?.join_code) {
+        navigate(`/join?code=${clanRes.data.join_code}`, { replace: true })
+      } else {
+        navigate('/join', { replace: true })
+      }
+      return
+    }
+
     setClan(clanRes.data)
-    setMembers(membersRes.data || [])
+    setMembers(activeMembers)
     setTrips(tripsRes.data || [])
     setItems(itemsRes.data || [])
     setShares(sharesRes.data || [])

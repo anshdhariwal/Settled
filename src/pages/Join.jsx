@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Shell, Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconSuccessTick } from '../components/icons'
@@ -7,8 +7,11 @@ import { formatDOB, isValidDOB } from '../lib/formatINR'
 
 export default function Join({ onEnter }) {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const urlCode = searchParams.get('code') || ''
+
   const [step, setStep] = useState('code')
-  const [code, setCode] = useState('')
+  const [code, setCode] = useState(urlCode.toUpperCase())
   const [clan, setClan] = useState(null)
   const [availableMembers, setAvailableMembers] = useState([])
   const [selectedMemberId, setSelectedMemberId] = useState('')
@@ -33,6 +36,12 @@ export default function Join({ onEnter }) {
     setTimeout(() => setError(''), 3500)
   }
 
+  useEffect(() => {
+    if (urlCode && urlCode.trim().length >= 6) {
+      verifyCodeByValue(urlCode.trim())
+    }
+  }, [urlCode])
+
   function handleBackClick() {
     if (step === 'select_identity') {
       if (isAddingNew && availableMembers.length > 0) {
@@ -45,8 +54,8 @@ export default function Join({ onEnter }) {
     }
   }
 
-  async function handleVerifyCode() {
-    if (!code.trim()) {
+  async function verifyCodeByValue(targetCode) {
+    if (!targetCode.trim()) {
       showToastError('Enter a join code.')
       return
     }
@@ -55,7 +64,7 @@ export default function Join({ onEnter }) {
     const { data: clanData, error: clanError } = await supabase
       .from('clans')
       .select('*')
-      .eq('join_code', code.toUpperCase().trim())
+      .eq('join_code', targetCode.toUpperCase().trim())
       .maybeSingle()
 
     if (clanError || !clanData) {
@@ -81,6 +90,10 @@ export default function Join({ onEnter }) {
     }
     setLoading(false)
     setStep('select_identity')
+  }
+
+  function handleVerifyCode() {
+    verifyCodeByValue(code)
   }
 
   async function handleJoinClan() {
