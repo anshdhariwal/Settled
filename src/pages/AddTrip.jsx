@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus } from '../components/icons'
 
-function ShareSelector({ people, selected, onChange }) {
+function ShareSelector({ people, selected, onChange, shakeShare }) {
   const allSelected = selected.length === people.length
   function toggle(id) {
     if (selected.includes(id)) {
@@ -30,7 +30,7 @@ function ShareSelector({ people, selected, onChange }) {
           {allSelected ? 'Clear All' : 'Select All'}
         </button>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className={`flex flex-wrap gap-1.5 rounded-lg transition-all ${shakeShare ? 'field-shake' : ''}`}>
         {people.map((p) => {
           const active = selected.includes(p.id)
           return (
@@ -38,7 +38,7 @@ function ShareSelector({ people, selected, onChange }) {
               type="button"
               key={p.id}
               onClick={() => toggle(p.id)}
-              className={`px-3.5 py-2 rounded-lg text-sm font-semibold border transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                 active
                   ? 'bg-zinc-100 text-zinc-950 border-white'
                   : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200'
@@ -66,12 +66,22 @@ export default function AddTrip({ people, clanId }) {
 
   const [payDrafts, setPayDrafts] = useState(people.map((p) => ({ person_id: p.id, amount: '' })))
   const [saving, setSaving] = useState(false)
+  const [shakeFields, setShakeFields] = useState([])
+
+  function triggerShake(fields) {
+    setShakeFields(fields)
+    setTimeout(() => setShakeFields([]), 420)
+  }
 
   const itemTotal = itemDrafts.reduce((sum, i) => sum + Number(i.price || 0), 0)
   const payTotal = payDrafts.reduce((sum, p) => sum + Number(p.amount || 0), 0)
 
   function addItem() {
-    if (!itemName.trim() || !itemPrice || Number(itemPrice) <= 0) return
+    const missing = []
+    if (!itemName.trim()) missing.push('name')
+    if (!itemPrice || Number(itemPrice) <= 0) missing.push('price')
+    if (itemShare.length === 0) missing.push('share')
+    if (missing.length > 0) { triggerShake(missing); return }
     setItemDrafts([...itemDrafts, { name: itemName.trim(), price: Number(itemPrice), shared_by: itemShare }])
     setItemName('')
     setItemPrice('')
@@ -149,8 +159,13 @@ export default function AddTrip({ people, clanId }) {
 
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
             <div className="grid grid-cols-3 gap-2">
-              <input placeholder="Item name (e.g. Milk)" className="settled-input col-span-2" value={itemName} onChange={(e) => setItemName(e.target.value)} />
-              <div className="relative col-span-1 flex items-stretch settled-input p-0 overflow-hidden gap-0">
+              <input
+                placeholder="Item name (e.g. Milk)"
+                className={`settled-input col-span-2 ${shakeFields.includes('name') ? 'field-shake' : ''}`}
+                value={itemName}
+                onChange={(e) => setItemName(e.target.value)}
+              />
+              <div className={`relative col-span-1 flex items-stretch settled-input p-0 overflow-hidden gap-0 ${shakeFields.includes('price') ? 'field-shake' : ''}`}>
                 <span className="flex items-center pl-0 pr-2 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
                 <input
                   placeholder="0.00"
@@ -166,12 +181,13 @@ export default function AddTrip({ people, clanId }) {
                 />
               </div>
             </div>
-            <ShareSelector people={people} selected={itemShare} onChange={setItemShare} />
+            <ShareSelector people={people} selected={itemShare} onChange={setItemShare} shakeShare={shakeFields.includes('share')} />
             <div className="flex justify-end">
               <button
-                className="btn btn-s btn-sm w-auto px-4 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                className={`btn btn-s btn-sm w-auto px-4 flex items-center gap-1.5 ${
+                  !itemName.trim() || !itemPrice || itemShare.length === 0 ? 'opacity-40 cursor-not-allowed' : ''
+                }`}
                 onClick={addItem}
-                disabled={itemShare.length === 0}
               >
                 <IconPlus className="w-3 h-3" />
                 <span>Add Item</span>

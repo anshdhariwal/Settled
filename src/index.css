@@ -248,6 +248,22 @@ body {
   animation: sheetIn 0.22s var(--ease-o) both;
 }
 
+/* Field shake — invalid/missing feedback */
+@keyframes fieldShake {
+  0%   { transform: translateX(0); }
+  18%  { transform: translateX(-6px); }
+  36%  { transform: translateX(5px); }
+  54%  { transform: translateX(-4px); }
+  72%  { transform: translateX(3px); }
+  88%  { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+
+.field-shake {
+  animation: fieldShake 0.38s var(--ease-io);
+  border-color: hsl(var(--danger-text)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--danger-text) / 0.15) !important;
+}
 
 
 .settled-card {
@@ -326,9 +342,9 @@ body {
 }
 
 .btn-sm {
-  height: 42px !important;
-  padding: 0 1rem;
-  font-size: var(--tx-sm);
+  height: 34px !important;
+  padding: 0 0.875rem;
+  font-size: var(--tx-xs);
   border-radius: var(--r-lg);
   width: auto;
   flex-shrink: 0;
