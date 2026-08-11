@@ -383,14 +383,16 @@ body {
 }
 
 .btn-danger {
-  background: rgba(244, 63, 94, 0.12);
-  color: #f43f5e;
-  border-color: rgba(244, 63, 94, 0.25);
+  background: rgba(240, 136, 62, 0.08);
+  color: #F0883E;
+  border: 1px solid rgba(240, 136, 62, 0.35);
+  transition: all 0.18s var(--ease-io);
 }
 
 .btn-danger:hover {
-  background: rgba(244, 63, 94, 0.22);
-  border-color: rgba(244, 63, 94, 0.4);
+  background: #C95116;
+  color: #FFFFFF !important;
+  border-color: #F0883E;
 }
 
 .btn-emerald {
@@ -405,9 +407,9 @@ body {
 }
 
 .btn-sm {
-  height: 34px !important;
-  padding: 0 0.875rem;
-  font-size: var(--tx-xs);
+  height: 42px !important;
+  padding: 0 1.1rem;
+  font-size: var(--tx-sm);
   border-radius: var(--r-lg);
   width: auto;
   flex-shrink: 0;
@@ -494,12 +496,16 @@ body {
   color: hsl(var(--text-000));
 }
 
+.icon-btn-danger {
+  color: #F0883E !important;
+}
+
 .icon-btn-danger:hover {
-  color: #fb7185 !important;
+  color: #FFFFFF !important;
 }
 
 .icon-btn-danger:hover .squish {
-  background: rgba(244, 63, 94, 0.18) !important;
+  background: #C95116 !important;
 }
 
 .icon-btn:hover .squish {
