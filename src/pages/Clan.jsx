@@ -40,7 +40,13 @@ export default function Clan({ memberId, onExit, viewOverride }) {
   const [activeTab, setActiveTab] = useState('overview')
   const [copiedCode, setCopiedCode] = useState(false)
   const [copiedShareLink, setCopiedShareLink] = useState(false)
+  const [toastMsg, setToastMsg] = useState('')
   const [showActionModal, setShowActionModal] = useState(false)
+
+  function triggerToast(msg) {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(''), 3000)
+  }
 
   async function loadAllData() {
     if (!clanId) return
@@ -148,26 +154,30 @@ export default function Clan({ memberId, onExit, viewOverride }) {
     if (!clan?.join_code) return
     safeCopy(clan.join_code)
     setCopiedCode(true)
-    setTimeout(() => setCopiedCode(false), 2000)
+    triggerToast('Join code copied to clipboard!')
+    setTimeout(() => setCopiedCode(false), 3000)
   }
 
   function handleShareJoinLink() {
     if (!clan?.join_code) return
     const joinUrl = `${window.location.origin}/join?code=${clan.join_code}`
+    const shareText = `Share my clan for all our settlement using the link below:\n\n${joinUrl}\n\n*Settled App*`
+
     if (navigator.share) {
       navigator.share({
         title: clan.name,
-        text: `Join ${clan.name} on Settled:`,
-        url: joinUrl,
+        text: shareText,
       }).catch(() => {
-        safeCopy(joinUrl)
+        safeCopy(shareText)
         setCopiedShareLink(true)
-        setTimeout(() => setCopiedShareLink(false), 2000)
+        triggerToast('Share link copied to clipboard!')
+        setTimeout(() => setCopiedShareLink(false), 3000)
       })
     } else {
-      safeCopy(joinUrl)
+      safeCopy(shareText)
       setCopiedShareLink(true)
-      setTimeout(() => setCopiedShareLink(false), 2000)
+      triggerToast('Share link copied to clipboard!')
+      setTimeout(() => setCopiedShareLink(false), 3000)
     }
   }
 
@@ -384,6 +394,13 @@ export default function Clan({ memberId, onExit, viewOverride }) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {toastMsg && (
+        <div className="toast-banner">
+          <IconSuccessTick className="w-4 h-4 text-emerald-400" />
+          <span>{toastMsg}</span>
         </div>
       )}
     </div>
