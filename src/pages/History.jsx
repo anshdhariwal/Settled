@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { IconTrash } from '../components/icons'
+import { IconTrash, IconCart, IconExchange, IconArrowRight } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
 
 export default function History({ trips, items, shares, payments, generalTx, getMemberName, onDeleteTrip, onDeleteGeneral }) {
@@ -25,8 +25,9 @@ export default function History({ trips, items, shares, payments, generalTx, get
           <div key={trip.id} className="settled-card p-4 space-y-3">
             <div className="flex justify-between items-start">
               <div>
-                <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-medium">
-                  Buy Trip
+                <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-medium">
+                  <IconCart className="w-3 h-3 text-emerald-400" />
+                  <span>Buy Trip</span>
                 </span>
                 <h4 className="font-bold text-sm text-white mt-1">{trip.place || 'Grocery Store'}</h4>
                 <p className="text-[11px] text-zinc-500">{trip.date} · Created by {getMemberName(trip.created_by)}</p>
@@ -87,12 +88,15 @@ export default function History({ trips, items, shares, payments, generalTx, get
       {generalTx.map((tx) => (
         <div key={tx.id} className="settled-card p-4 flex justify-between items-center">
           <div>
-            <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 font-medium">
-              General Tx
+            <span className="inline-flex items-center gap-1 text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 font-medium">
+              <IconExchange className="w-3 h-3 text-blue-400" />
+              <span>General Tx</span>
             </span>
             <p className="font-semibold text-sm text-white mt-1">{tx.description || 'Direct Transfer'}</p>
-            <p className="text-[11px] text-zinc-400">
-              <span className="text-rose-400">{getMemberName(tx.from_person)}</span> → <span className="text-emerald-400">{getMemberName(tx.to_person)}</span>
+            <p className="text-[11px] text-zinc-400 flex items-center gap-1.5 mt-0.5">
+              <span className="text-rose-400 font-medium">{getMemberName(tx.from_person)}</span>
+              <IconArrowRight className="w-3 h-3 text-zinc-500" />
+              <span className="text-emerald-400 font-medium">{getMemberName(tx.to_person)}</span>
             </p>
           </div>
           <div className="text-right flex items-center gap-3">

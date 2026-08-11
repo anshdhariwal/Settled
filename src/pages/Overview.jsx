@@ -1,4 +1,4 @@
-import { IconSuccessTick, IconCart, IconExchange } from '../components/icons'
+import { IconSuccessTick, IconCart, IconExchange, IconArrowRight } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
 
 export default function Overview({ balances, getMemberName, onSettle, onGoAddTrip, onGoAddGeneral }) {
@@ -65,7 +65,7 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
               >
                 <div className="text-xs text-zinc-200 flex items-center gap-1.5 flex-wrap">
                   <span className="font-semibold text-rose-400">{getMemberName(s.from)}</span>
-                  <span className="text-zinc-500 text-[11px]">pays</span>
+                  <IconArrowRight className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                   <span className="font-semibold text-emerald-400">{getMemberName(s.to)}</span>
                   <span className="font-bold text-blue-400 font-mono text-sm ml-1">₹{formatINR(s.amount)}</span>
                 </div>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
-import { IconChevronLeft, IconCopy, IconSuccessTick } from '../components/icons'
+import { IconChevronLeft, IconCopy, IconSuccessTick, IconLogOut, IconAlertTriangle } from '../components/icons'
 
 export default function Settings({ clan, currentMember, clanId, memberId, onExit }) {
   const navigate = useNavigate()
@@ -118,8 +118,9 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
               <p className="font-semibold text-sm text-white">Leave Clan</p>
               <p className="text-xs text-zinc-400">Exit this clan. You can rejoin anytime with the code.</p>
             </div>
-            <button className="btn btn-s btn-sm shrink-0 w-auto px-4" onClick={() => setShowLeaveModal(true)}>
-              Leave Clan
+            <button className="btn btn-s btn-sm shrink-0 w-auto px-4 flex items-center gap-1.5" onClick={() => setShowLeaveModal(true)}>
+              <IconLogOut className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Leave Clan</span>
             </button>
           </div>
 
@@ -131,8 +132,9 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
                   <p className="text-xs text-zinc-400">Permanently delete this clan and all expense records.</p>
                 </div>
                 {!showDisband && (
-                  <button className="btn btn-danger btn-sm shrink-0 w-auto px-4" onClick={() => setShowDisband(true)}>
-                    Disband Clan
+                  <button className="btn btn-danger btn-sm shrink-0 w-auto px-4 flex items-center gap-1.5" onClick={() => setShowDisband(true)}>
+                    <IconAlertTriangle className="w-3.5 h-3.5" />
+                    <span>Disband Clan</span>
                   </button>
                 )}
               </div>

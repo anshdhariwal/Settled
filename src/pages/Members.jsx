@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { IconPlus, IconTrash, IconPencil } from '../components/icons'
+import { IconPlus, IconTrash, IconPencil, IconCrown, IconKey } from '../components/icons'
 import { formatINR, formatDOB, isValidDOB } from '../lib/formatINR'
 
 export default function Members({ members, balances, memberId, currentMember, clanId, onRefresh }) {
@@ -93,8 +93,9 @@ export default function Members({ members, balances, memberId, currentMember, cl
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="font-medium text-sm text-white truncate">{member.alias}</p>
                       {member.is_creator && (
-                        <span className="text-[10px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20 font-medium">
-                          Leader
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20 font-medium">
+                          <IconCrown className="w-3 h-3 text-amber-400" />
+                          <span>Leader</span>
                         </span>
                       )}
                       {isSelf && (
@@ -149,8 +150,9 @@ export default function Members({ members, balances, memberId, currentMember, cl
             <p className="text-xs font-semibold text-amber-400">Are you the clan leader?</p>
             <p className="text-[11px] text-zinc-400">Claim leader access using your DOB</p>
           </div>
-          <button className="btn btn-s btn-sm text-xs px-3.5 shrink-0 border-amber-500/40 text-amber-300 hover:bg-amber-500/10" onClick={() => setShowLeaderModal(true)}>
-            Claim Leader Access
+          <button className="btn btn-s btn-sm text-xs px-3.5 shrink-0 border-amber-500/40 text-amber-300 hover:bg-amber-500/10 inline-flex items-center gap-1.5" onClick={() => setShowLeaderModal(true)}>
+            <IconKey className="w-3.5 h-3.5 text-amber-400" />
+            <span>Claim Leader Access</span>
           </button>
         </div>
       )}

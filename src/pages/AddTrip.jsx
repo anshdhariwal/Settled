@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
-import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus } from '../components/icons'
+import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, IconMapPin } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
 
 function ShareSelector({ people, selected, onChange, shakeShare }) {
@@ -138,10 +138,20 @@ export default function AddTrip({ people, clanId }) {
       {step === 'items' && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Trip Date">
+            <Field label={
+              <span className="inline-flex items-center gap-1.5">
+                <IconCalendar className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Trip Date</span>
+              </span>
+            }>
               <input type="date" className="settled-input" value={date} onChange={(e) => setDate(e.target.value)} />
             </Field>
-            <Field label="Store / Place">
+            <Field label={
+              <span className="inline-flex items-center gap-1.5">
+                <IconMapPin className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Store / Place</span>
+              </span>
+            }>
               <input placeholder="e.g. Grocery Mart" className="settled-input" value={place} onChange={(e) => setPlace(e.target.value)} />
             </Field>
           </div>
