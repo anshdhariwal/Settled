@@ -288,9 +288,9 @@ export default function Create({ onEnter }) {
                   {memberList.map((m, idx) => (
                     <span
                       key={idx}
-                      className="toast-msg inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700/80 text-xs text-zinc-200"
+                      className="inline-flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-lg bg-zinc-800 border border-zinc-700/80 text-xs text-zinc-200"
                     >
-                      <span className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-300 font-bold text-[10px] flex items-center justify-center">
+                      <span className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-300 font-bold text-[10px] flex items-center justify-center shrink-0">
                         {m.charAt(0).toUpperCase()}
                       </span>
                       <span className="font-medium">{m}</span>
