@@ -6,13 +6,21 @@ import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, I
 import { formatINR } from '../lib/formatINR'
 
 function ShareSelector({ people, selected, onChange, shakeShare }) {
-  const allSelected = selected.length === people.length
+  const allSelected = people.length > 0 && selected.length === people.length
+
   function toggle(id) {
     if (selected.includes(id)) {
-      if (selected.length === 1) return
       onChange(selected.filter((x) => x !== id))
     } else {
       onChange([...selected, id])
+    }
+  }
+
+  function toggleAll() {
+    if (allSelected) {
+      onChange([])
+    } else {
+      onChange(people.map((p) => p.id))
     }
   }
 
@@ -22,13 +30,13 @@ function ShareSelector({ people, selected, onChange, shakeShare }) {
         <label className="text-zinc-400 font-medium text-xs">Shared By</label>
         <button
           type="button"
-          className="text-[11px] text-blue-400 hover:underline"
-          onClick={() => onChange(allSelected ? [people[0]?.id] : people.map((p) => p.id))}
+          className="text-[11px] text-blue-400 hover:underline font-medium"
+          onClick={toggleAll}
         >
-          {allSelected ? 'Deselect All' : 'Select All'}
+          {allSelected ? 'Clear All' : 'Select All'}
         </button>
       </div>
-      <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar p-1 rounded-lg border border-zinc-800 bg-zinc-900/60">
+      <div className="flex flex-wrap gap-1.5">
         {people.map((p) => {
           const active = selected.includes(p.id)
           return (
