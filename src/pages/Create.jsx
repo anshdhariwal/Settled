@@ -89,6 +89,10 @@ export default function Create({ onEnter }) {
       showToastError(`${clean} is already in the list.`)
       return
     }
+    if (memberList.length >= 9) {
+      showToastError('Maximum 10 members allowed per clan (including leader).')
+      return
+    }
     setMemberList((prev) => [...prev, clean])
     setMemberInput('')
   }

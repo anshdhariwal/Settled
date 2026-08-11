@@ -83,6 +83,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
 
   async function handleAddMember() {
     if (!newMemberName.trim()) return
+    if (members.length >= 10) return
     await supabase.from('clan_members').insert({ clan_id: clanId, alias: newMemberName.trim(), is_creator: false })
     setNewMemberName('')
     onRefresh()
@@ -253,20 +254,27 @@ export default function Members({ members, balances, memberId, currentMember, cl
 
       {currentMember?.is_creator && (
         <div className="settled-card p-4 space-y-3">
-          <p className="sec-lbl">Add Member</p>
-          <div className="flex gap-2">
-            <input
-              className="settled-input flex-1"
-              value={newMemberName}
-              maxLength={12}
-              onChange={(e) => setNewMemberName(e.target.value)}
-              placeholder="Enter member name"
-            />
-            <button onClick={handleAddMember} className="btn btn-p btn-sm px-4 flex items-center gap-1.5 shrink-0 w-auto">
-              <IconPlus className="w-3.5 h-3.5 text-zinc-950" />
-              <span>Add</span>
-            </button>
+          <div className="flex justify-between items-center">
+            <p className="sec-lbl">Add Member</p>
+            <span className="text-[11px] font-mono text-zinc-400">{members.length}/10</span>
           </div>
+          {members.length >= 10 ? (
+            <p className="text-xs text-amber-400 font-medium">Maximum member limit reached (10 max per clan)</p>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                className="settled-input flex-1"
+                value={newMemberName}
+                maxLength={12}
+                onChange={(e) => setNewMemberName(e.target.value)}
+                placeholder="Enter member name"
+              />
+              <button onClick={handleAddMember} className="btn btn-p btn-sm px-4 flex items-center gap-1.5 shrink-0 w-auto">
+                <IconPlus className="w-3.5 h-3.5 text-zinc-950" />
+                <span>Add</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 

@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
-import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, IconMapPin, IconChevronUp, IconChevronDown } from '../components/icons'
+import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, IconMapPin, IconChevronUp, IconChevronDown, IconPencil, IconSuccessTick } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
 
 function ShareSelector({ people, selected, onChange, shakeShare }) {
@@ -67,6 +67,11 @@ export default function AddTrip({ people, clanId }) {
   const [itemDrafts, setItemDrafts] = useState([])
   const [expandedItemsArea, setExpandedItemsArea] = useState(false)
 
+  const [editingItemIdx, setEditingItemIdx] = useState(null)
+  const [editItemName, setEditItemName] = useState('')
+  const [editItemPrice, setEditItemPrice] = useState('')
+  const [editItemShare, setEditItemShare] = useState([])
+
   const [itemName, setItemName] = useState('')
   const [itemPrice, setItemPrice] = useState('')
   const [itemShare, setItemShare] = useState(people.map((p) => p.id))
@@ -75,6 +80,28 @@ export default function AddTrip({ people, clanId }) {
   const [saving, setSaving] = useState(false)
   const [shakeFields, setShakeFields] = useState([])
   const [showConfirmModal, setShowConfirmModal] = useState(false)
+
+  function startEditingItem(idx) {
+    const item = itemDrafts[idx]
+    setEditingItemIdx(idx)
+    setEditItemName(item.name)
+    setEditItemPrice(String(item.price))
+    setEditItemShare([...item.shared_by])
+  }
+
+  function saveEditingItem(idx) {
+    if (!editItemName.trim() || !editItemPrice || Number(editItemPrice) <= 0 || editItemShare.length === 0) {
+      return
+    }
+    const updated = [...itemDrafts]
+    updated[idx] = {
+      name: editItemName.trim(),
+      price: Number(editItemPrice),
+      shared_by: editItemShare,
+    }
+    setItemDrafts(updated)
+    setEditingItemIdx(null)
+  }
 
   function triggerShake(fields) {
     setShakeFields(fields)
@@ -168,46 +195,158 @@ export default function AddTrip({ people, clanId }) {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <p className="sec-lbl">Added Items ({itemDrafts.length})</p>
-                <button
-                  type="button"
-                  onClick={() => setExpandedItemsArea(!expandedItemsArea)}
-                  className="icon-btn text-zinc-400 hover:text-white transition-all p-1"
-                  title={expandedItemsArea ? "Collapse visible area" : "Double visible items area"}
-                  aria-label={expandedItemsArea ? "Collapse" : "Expand"}
-                >
-                  <div className="squish"></div>
-                  {expandedItemsArea ? (
-                    <IconChevronUp className="w-4 h-4 text-blue-400" />
-                  ) : (
-                    <IconChevronDown className="w-4 h-4 text-zinc-400" />
-                  )}
-                </button>
+                {itemDrafts.length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setExpandedItemsArea(!expandedItemsArea)}
+                    className="icon-btn text-zinc-400 hover:text-white transition-all p-1"
+                    title={expandedItemsArea ? "Collapse visible area" : "Double visible items area"}
+                    aria-label={expandedItemsArea ? "Collapse" : "Expand"}
+                  >
+                    <div className="squish"></div>
+                    {expandedItemsArea ? (
+                      <IconChevronUp className="w-4 h-4 text-blue-400" />
+                    ) : (
+                      <IconChevronDown className="w-4 h-4 text-zinc-400" />
+                    )}
+                  </button>
+                )}
               </div>
-              <div className={`rounded-xl border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-800 transition-all duration-200 overflow-y-auto custom-scrollbar ${
+              <div className={`rounded-xl border border-zinc-800 bg-zinc-900/60 transition-all duration-200 overflow-y-auto custom-scrollbar ${
                 expandedItemsArea ? 'max-h-92' : 'max-h-46'
               }`}>
-                {itemDrafts.map((it, idx) => (
-                  <div key={idx} className="px-3.5 py-3 flex justify-between items-center gap-3">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="w-6 h-6 rounded-lg bg-zinc-800 border border-zinc-700/80 text-white font-bold text-xs flex items-center justify-center shrink-0 leading-none select-none shadow-xs">
-                        {idx + 1}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-sm text-white truncate">{it.name}</p>
-                        <p className="text-xs text-zinc-400 truncate">
-                          Shared by: <span className="text-zinc-200">{it.shared_by.map((id) => people.find((p) => p.id === id)?.alias).filter(Boolean).join(', ')}</span>
-                        </p>
+                {itemDrafts.map((it, idx) => {
+                  const isEditingThis = editingItemIdx === idx
+
+                  return (
+                    <div key={idx} className={`px-3.5 py-3 flex flex-col gap-1.5 border-b border-zinc-800/60 last:border-b-0 transition-colors ${isEditingThis ? 'bg-zinc-800/40' : ''}`}>
+                      {/* Top Line: Badge + Item Name (Left) & Pencil/Tick + Trash (Top Right) */}
+                      <div className="flex justify-between items-center gap-2 w-full">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <span className="w-6 h-6 rounded-lg bg-zinc-800 border border-zinc-700/80 text-white font-bold text-xs flex items-center justify-center shrink-0 leading-none select-none shadow-xs">
+                            {idx + 1}
+                          </span>
+                          {isEditingThis ? (
+                            <input
+                              className="font-semibold text-sm text-white bg-transparent border-b border-zinc-700 focus:border-zinc-400 outline-none w-full max-w-[160px] py-0 leading-tight"
+                              value={editItemName}
+                              maxLength={15}
+                              onChange={(e) => setEditItemName(e.target.value)}
+                              placeholder="Item name"
+                              autoFocus
+                            />
+                          ) : (
+                            <p className="font-semibold text-sm text-white truncate">{it.name}</p>
+                          )}
+                        </div>
+
+                        {/* Top Right Action Buttons */}
+                        <div className="flex items-center gap-1 shrink-0 select-none">
+                          {isEditingThis ? (
+                            <button
+                              type="button"
+                              className="w-5 h-5 flex items-center justify-center text-emerald-400 hover:text-emerald-300 rounded transition-colors shrink-0"
+                              onClick={() => saveEditingItem(idx)}
+                              title="Save edits"
+                            >
+                              <IconSuccessTick className="w-3.5 h-3.5 text-emerald-400" />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="w-5 h-5 flex items-center justify-center text-zinc-400 hover:text-zinc-200 rounded transition-colors shrink-0"
+                              onClick={() => startEditingItem(idx)}
+                              title="Edit item"
+                            >
+                              <IconPencil className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            className="w-5 h-5 flex items-center justify-center text-zinc-400 hover:text-rose-400 rounded transition-colors shrink-0"
+                            onClick={() => {
+                              if (editingItemIdx === idx) setEditingItemIdx(null)
+                              setItemDrafts(itemDrafts.filter((_, i) => i !== idx))
+                            }}
+                            title="Delete item"
+                          >
+                            <IconTrash className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Bottom Line: Shared By (Bottom Left) & Price (Bottom Right) */}
+                      <div className="flex justify-between items-center gap-2 w-full pl-8.5">
+                        {isEditingThis ? (
+                          <div className="text-xs text-zinc-400 select-none flex flex-wrap items-center gap-x-1 gap-y-0.5 leading-normal flex-1 min-w-0">
+                            <span className="text-zinc-400 font-medium shrink-0">Shared by:</span>
+                            {people.map((p, pIdx) => {
+                              const isSelected = editItemShare.includes(p.id)
+                              return (
+                                <span key={p.id} className="inline-flex items-center">
+                                  <span
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        if (editItemShare.length > 1) {
+                                          setEditItemShare(editItemShare.filter((id) => id !== p.id))
+                                        }
+                                      } else {
+                                        setEditItemShare([...editItemShare, p.id])
+                                      }
+                                    }}
+                                    className={`cursor-pointer transition-colors ${
+                                      isSelected
+                                        ? 'text-white font-semibold'
+                                        : 'text-zinc-500 line-through opacity-50 hover:opacity-90'
+                                    }`}
+                                    title={`Click to ${isSelected ? 'exclude' : 'include'} ${p.alias}`}
+                                  >
+                                    {p.alias}
+                                  </span>
+                                  {pIdx < people.length - 1 && <span className="text-zinc-500 mr-0.5">,</span>}
+                                </span>
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-zinc-400 flex flex-wrap items-center gap-x-1 gap-y-0.5 leading-normal flex-1 min-w-0">
+                            <span className="text-zinc-400 shrink-0">Shared by:</span>
+                            {it.shared_by.map((id, sIdx) => {
+                              const alias = people.find((p) => p.id === id)?.alias
+                              if (!alias) return null
+                              return (
+                                <span key={id} className="text-zinc-200 font-medium inline-flex items-center">
+                                  <span>{alias}</span>
+                                  {sIdx < it.shared_by.length - 1 && <span className="text-zinc-500 mr-0.5">,</span>}
+                                </span>
+                              )
+                            })}
+                          </div>
+                        )}
+
+                        {/* Price on Bottom Right */}
+                        <div className="shrink-0 select-none ml-2">
+                          {isEditingThis ? (
+                            <div className="flex items-center border-b border-zinc-700 focus-within:border-zinc-400 pb-0.5">
+                              <span className="font-mono text-blue-400 font-bold text-sm select-none">₹</span>
+                              <input
+                                inputMode="decimal"
+                                maxLength={7}
+                                className="font-mono text-blue-400 font-bold text-sm bg-transparent outline-none w-14 text-right py-0"
+                                value={editItemPrice}
+                                onChange={(e) => setEditItemPrice(e.target.value.replace(/[^0-9.]/g, ''))}
+                                placeholder="0.00"
+                              />
+                            </div>
+                          ) : (
+                            <span className="font-mono text-blue-400 font-bold text-sm">₹{formatINR(it.price)}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-mono text-blue-400 font-bold text-sm">₹{formatINR(it.price)}</span>
-                      <button className="icon-btn icon-btn-danger text-zinc-400" onClick={() => setItemDrafts(itemDrafts.filter((_, i) => i !== idx))}>
-                        <div className="squish"></div>
-                        <IconTrash className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
