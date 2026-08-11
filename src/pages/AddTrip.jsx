@@ -8,7 +8,6 @@ function ShareSelector({ people, selected, onChange }) {
   const allSelected = selected.length === people.length
   function toggle(id) {
     if (selected.includes(id)) {
-      if (selected.length === 1) return
       onChange(selected.filter((x) => x !== id))
     } else {
       onChange([...selected, id])
@@ -17,7 +16,7 @@ function ShareSelector({ people, selected, onChange }) {
 
   function toggleAll() {
     if (allSelected) {
-      onChange([people[0]?.id].filter(Boolean))
+      onChange([])
     } else {
       onChange(people.map((p) => p.id))
     }
@@ -31,7 +30,7 @@ function ShareSelector({ people, selected, onChange }) {
           {allSelected ? 'Clear All' : 'Select All'}
         </button>
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2">
         {people.map((p) => {
           const active = selected.includes(p.id)
           return (
@@ -39,7 +38,7 @@ function ShareSelector({ people, selected, onChange }) {
               type="button"
               key={p.id}
               onClick={() => toggle(p.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+              className={`px-3.5 py-2 rounded-lg text-sm font-semibold border transition-all ${
                 active
                   ? 'bg-zinc-100 text-zinc-950 border-white'
                   : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200'
@@ -168,10 +167,16 @@ export default function AddTrip({ people, clanId }) {
               </div>
             </div>
             <ShareSelector people={people} selected={itemShare} onChange={setItemShare} />
-            <button className="btn btn-s btn-sm w-full flex items-center justify-center gap-1.5" onClick={addItem}>
-              <IconPlus className="w-3.5 h-3.5" />
-              <span>Add Item to Trip</span>
-            </button>
+            <div className="flex justify-end">
+              <button
+                className="btn btn-s btn-sm w-auto px-4 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={addItem}
+                disabled={itemShare.length === 0}
+              >
+                <IconPlus className="w-3 h-3" />
+                <span>Add Item</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
