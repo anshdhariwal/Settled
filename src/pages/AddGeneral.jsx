@@ -43,7 +43,7 @@ export default function AddGeneral({ people, clanId }) {
         </Field>
 
         <Field label="Description (Optional)">
-          <input placeholder="e.g. WiFi bill or Cash payment" maxLength={40} className="settled-input" value={description} onChange={(e) => setDescription(e.target.value)} />
+          <input placeholder="e.g. WiFi bill or Cash payment" maxLength={15} className="settled-input" value={description} onChange={(e) => setDescription(e.target.value)} />
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
@@ -69,7 +69,7 @@ export default function AddGeneral({ people, clanId }) {
             <input
               placeholder="0.00"
               inputMode="decimal"
-              maxLength={9}
+              maxLength={7}
               className="flex-1 min-w-0 bg-transparent outline-none font-mono text-sm text-white placeholder:text-zinc-500 pr-3 py-0 h-full"
               value={amount}
               onChange={(e) => {

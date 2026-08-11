@@ -44,11 +44,10 @@ function ShareSelector({ people, selected, onChange, shakeShare }) {
               type="button"
               key={p.id}
               onClick={() => toggle(p.id)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                active
-                  ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm'
-                  : 'bg-zinc-800/80 text-zinc-400 border border-zinc-700/50 hover:bg-zinc-700/60'
-              }`}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${active
+                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm'
+                : 'bg-zinc-800/80 text-zinc-400 border border-zinc-700/50 hover:bg-zinc-700/60'
+                }`}
             >
               {p.alias}
             </button>
@@ -160,7 +159,7 @@ export default function AddTrip({ people, clanId }) {
                 <span>Store / Place</span>
               </span>
             }>
-              <input placeholder="e.g. Grocery Mart" maxLength={30} className="settled-input" value={place} onChange={(e) => setPlace(e.target.value)} />
+              <input placeholder="e.g. Grocery Mart" maxLength={12} className="settled-input" value={place} onChange={(e) => setPlace(e.target.value)} />
             </Field>
           </div>
 
@@ -199,7 +198,7 @@ export default function AddTrip({ people, clanId }) {
               <input
                 ref={itemNameInputRef}
                 placeholder="Item name (e.g. Milk)"
-                maxLength={40}
+                maxLength={15}
                 className={`settled-input col-span-2 ${shakeFields.includes('name') ? 'field-shake' : ''}`}
                 value={itemName}
                 onChange={(e) => setItemName(e.target.value)}
@@ -215,7 +214,7 @@ export default function AddTrip({ people, clanId }) {
                 <input
                   placeholder="0.00"
                   inputMode="decimal"
-                  maxLength={9}
+                  maxLength={7}
                   className="flex-1 min-w-0 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 pr-2 py-0 h-full"
                   value={itemPrice}
                   onChange={(e) => {
@@ -237,8 +236,8 @@ export default function AddTrip({ people, clanId }) {
             <div className="flex justify-end">
               <button
                 className={`btn btn-sm w-auto px-4 flex items-center gap-1.5 transition-all ${!itemName.trim() || !itemPrice || itemShare.length === 0
-                    ? 'btn-s opacity-40 cursor-not-allowed'
-                    : 'btn-emerald font-semibold shadow-sm'
+                  ? 'btn-s opacity-40 cursor-not-allowed'
+                  : 'btn-emerald font-semibold shadow-sm'
                   }`}
                 onClick={addItem}
               >
@@ -298,6 +297,7 @@ export default function AddTrip({ people, clanId }) {
                     <input
                       placeholder="0.00"
                       inputMode="decimal"
+                      maxLength={7}
                       className="flex-1 min-w-0 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 pr-2 py-0 h-full text-right"
                       value={p.amount}
                       onChange={(e) => {
