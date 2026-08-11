@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
@@ -6,10 +6,12 @@ import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, I
 import { formatINR } from '../lib/formatINR'
 
 function ShareSelector({ people, selected, onChange, shakeShare }) {
-  const allSelected = selected.length === people.length
-  function toggle(id) {
+  const allSelected = people.length > 0 && selected.length === people.length
+
+  function togglePerson(id) {
     if (selected.includes(id)) {
-      onChange(selected.filter((x) => x !== id))
+      if (selected.length === 1) return
+      onChange(selected.filter((pId) => pId !== id))
     } else {
       onChange([...selected, id])
     }
@@ -17,32 +19,38 @@ function ShareSelector({ people, selected, onChange, shakeShare }) {
 
   function toggleAll() {
     if (allSelected) {
-      onChange([])
+      if (people.length > 0) onChange([people[0].id])
     } else {
       onChange(people.map((p) => p.id))
     }
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center text-xs">
-        <span className="text-zinc-400 font-medium">Shared By:</span>
-        <button type="button" onClick={toggleAll} className="text-amber-400 font-semibold hover:underline">
-          {allSelected ? 'Clear All' : 'Select All'}
+    <div className={`space-y-2 ${shakeShare ? 'field-shake' : ''}`}>
+      <div className="flex justify-between items-center">
+        <label className="text-xs font-semibold text-zinc-300">Shared By</label>
+        <button
+          type="button"
+          onClick={toggleAll}
+          className="text-[11px] text-blue-400 hover:text-blue-300 font-medium transition-colors"
+        >
+          {allSelected ? 'Deselect All' : 'Select All'}
         </button>
       </div>
-      <div className={`flex flex-wrap gap-1.5 rounded-lg transition-all ${shakeShare ? 'field-shake' : ''}`}>
+
+      <div className="flex flex-wrap gap-1.5">
         {people.map((p) => {
           const active = selected.includes(p.id)
           return (
             <button
               type="button"
               key={p.id}
-              onClick={() => toggle(p.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${active
-                  ? 'bg-zinc-200 text-zinc-900 border-zinc-300'
-                  : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200'
-                }`}
+              onClick={() => togglePerson(p.id)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                active
+                  ? 'bg-blue-500/15 border-blue-500/40 text-blue-300'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+              }`}
             >
               {p.alias}
             </button>
@@ -55,6 +63,7 @@ function ShareSelector({ people, selected, onChange, shakeShare }) {
 
 export default function AddTrip({ people, clanId }) {
   const navigate = useNavigate()
+  const nameInputRef = useRef(null)
   const [step, setStep] = useState('items')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [place, setPlace] = useState('')
@@ -87,6 +96,7 @@ export default function AddTrip({ people, clanId }) {
     setItemDrafts([...itemDrafts, { name: itemName.trim(), price: Number(itemPrice), shared_by: itemShare }])
     setItemName('')
     setItemPrice('')
+    setTimeout(() => nameInputRef.current?.focus(), 50)
   }
 
   async function save() {
@@ -186,26 +196,43 @@ export default function AddTrip({ people, clanId }) {
             </div>
           )}
 
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
+          <form onSubmit={(e) => { e.preventDefault(); addItem(); }} className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
             <div className="grid grid-cols-3 gap-2">
               <input
+                ref={nameInputRef}
                 placeholder="Item name (e.g. Milk)"
+                maxLength={40}
                 className={`settled-input col-span-2 ${shakeFields.includes('name') ? 'field-shake' : ''}`}
                 value={itemName}
                 onChange={(e) => setItemName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addItem()
+                  }
+                }}
               />
               <div className={`relative col-span-1 flex items-stretch settled-input p-0 overflow-hidden gap-0 ${shakeFields.includes('price') ? 'field-shake' : ''}`}>
                 <span className="flex items-center pl-0 pr-2 text-zinc-400 font-mono text-xs shrink-0 select-none pointer-events-none">₹</span>
                 <input
                   placeholder="0.00"
                   inputMode="decimal"
+                  maxLength={8}
                   className="flex-1 min-w-0 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 pr-2 py-0 h-full"
                   value={itemPrice}
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9.]/g, '')
                     const parts = val.split('.')
                     if (parts.length > 2) return
+                    if (parts[1] && parts[1].length > 2) return
+                    if (val.length > 8) return
                     setItemPrice(val)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addItem()
+                    }
                   }}
                 />
               </div>
@@ -213,6 +240,7 @@ export default function AddTrip({ people, clanId }) {
             <ShareSelector people={people} selected={itemShare} onChange={setItemShare} shakeShare={shakeFields.includes('share')} />
             <div className="flex justify-end">
               <button
+                type="button"
                 className={`btn btn-sm w-auto px-4 flex items-center gap-1.5 transition-all ${!itemName.trim() || !itemPrice || itemShare.length === 0
                     ? 'btn-s opacity-40 cursor-not-allowed'
                     : 'btn-emerald font-semibold shadow-sm'
@@ -223,7 +251,7 @@ export default function AddTrip({ people, clanId }) {
                 <span>Add Item</span>
               </button>
             </div>
-          </div>
+          </form>
 
           <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
             <span className="text-zinc-400 font-medium">Trip Total:</span>
