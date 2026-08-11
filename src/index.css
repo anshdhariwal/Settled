@@ -310,13 +310,14 @@ body {
 }
 
 .btn-p {
-  background: hsl(var(--text-000));
-  color: #121212;
-  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+  background: #e4e4e7;
+  color: #09090b;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .btn-p:hover {
-  background: #ffffff;
+  background: #f4f4f5;
 }
 
 .btn-s {

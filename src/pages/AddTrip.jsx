@@ -40,7 +40,7 @@ function ShareSelector({ people, selected, onChange, shakeShare }) {
               onClick={() => toggle(p.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                 active
-                  ? 'bg-zinc-100 text-zinc-950 border-white'
+                  ? 'bg-zinc-200 text-zinc-900 border-zinc-300'
                   : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200'
               }`}
             >
