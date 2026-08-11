@@ -163,7 +163,7 @@ export default function Join({ onEnter }) {
   }
 
   return (
-    <Shell>
+    <Shell maxWidth="max-w-[390px] sm:max-w-[420px]">
       <div className="settled-card p-5 sm:p-6 space-y-5">
         <div className="ph">
           <button onClick={handleBackClick} className="back-btn" title="Back">
@@ -273,14 +273,13 @@ export default function Join({ onEnter }) {
               </div>
             )}
 
-            <div className="pt-2 border-t border-zinc-800/80 flex justify-between items-center text-xs">
-              <span className="text-zinc-500">Are you the clan leader?</span>
+            <div className="pt-2 border-t border-zinc-800/80 flex justify-end text-xs">
               <button
                 type="button"
-                className="text-amber-400 hover:text-amber-300 font-semibold underline"
+                className="text-amber-400 hover:text-amber-300 font-semibold underline inline-flex items-center gap-1.5"
                 onClick={() => setShowLeaderModal(true)}
               >
-                Are you the leader?
+                <span>Are you the leader?</span>
               </button>
             </div>
 
