@@ -175,7 +175,7 @@ export default function AddTrip({ people, clanId }) {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-white truncate">{it.name}</p>
-                        <p className="text-[10px] text-zinc-400 truncate">
+                        <p className="text-[10px] text-zinc-100 truncate">
                           Shared by: {it.shared_by.map((id) => people.find((p) => p.id === id)?.alias).filter(Boolean).join(', ')}
                         </p>
                       </div>
