@@ -160,7 +160,7 @@ export default function AddTrip({ people, clanId }) {
                 <span>Store / Place</span>
               </span>
             }>
-              <input placeholder="e.g. Grocery Mart" className="settled-input" value={place} onChange={(e) => setPlace(e.target.value)} />
+              <input placeholder="e.g. Grocery Mart" maxLength={30} className="settled-input" value={place} onChange={(e) => setPlace(e.target.value)} />
             </Field>
           </div>
 

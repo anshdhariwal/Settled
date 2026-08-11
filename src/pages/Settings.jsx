@@ -85,14 +85,14 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
       <div className="space-y-4">
         <Field label="Clan Name">
           <div className="flex gap-2">
-            <input className="settled-input flex-1" value={clanName} onChange={(e) => setClanName(e.target.value)} />
+            <input className="settled-input flex-1" value={clanName} maxLength={24} onChange={(e) => setClanName(e.target.value)} />
             <button className="btn btn-s btn-sm shrink-0 w-auto px-4" onClick={saveClanName}>Save</button>
           </div>
         </Field>
 
         <Field label="Your Name / Alias">
           <div className="flex gap-2">
-            <input className="settled-input flex-1" value={alias} onChange={(e) => setAlias(e.target.value)} />
+            <input className="settled-input flex-1" value={alias} maxLength={12} onChange={(e) => setAlias(e.target.value)} />
             <button className="btn btn-s btn-sm shrink-0 w-auto px-4" onClick={saveAlias}>Save</button>
           </div>
         </Field>
@@ -143,7 +143,7 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
                 <div className="pt-3 border-t border-zinc-800/80 space-y-3">
                   <p className="text-xs text-zinc-300">Type <strong>DELETE</strong> to confirm permanent disbanding.</p>
                   <div className="flex gap-2">
-                    <input className="settled-input flex-1" value={confirmDisband} onChange={(e) => setConfirmDisband(e.target.value)} placeholder="Type DELETE" />
+                    <input className="settled-input flex-1" value={confirmDisband} maxLength={6} onChange={(e) => setConfirmDisband(e.target.value)} placeholder="Type DELETE" />
                     <button className="btn btn-s btn-sm px-4" onClick={() => setShowDisband(false)}>Cancel</button>
                     <button disabled={confirmDisband !== 'DELETE'} className="btn btn-danger btn-sm px-4 disabled:opacity-40" onClick={disbandClan}>
                       Confirm Disband

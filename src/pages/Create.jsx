@@ -229,6 +229,7 @@ export default function Create({ onEnter }) {
             <input
               className="settled-input"
               value={clanName}
+              maxLength={24}
               onChange={(e) => setClanName(e.target.value)}
               placeholder="e.g. Flat 304 Ration Squad"
               autoFocus
@@ -238,6 +239,7 @@ export default function Create({ onEnter }) {
             <input
               className="settled-input"
               value={alias}
+              maxLength={12}
               onChange={(e) => setAlias(e.target.value)}
               placeholder="e.g. Ansh (Leader)"
             />
@@ -259,6 +261,7 @@ export default function Create({ onEnter }) {
                   ref={memberInputRef}
                   className="settled-input flex-1"
                   value={memberInput}
+                  maxLength={12}
                   enterKeyHint="done"
                   onChange={(e) => setMemberInput(e.target.value)}
                   onKeyDown={handleKeyDown}

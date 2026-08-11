@@ -83,6 +83,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                       <input
                         className="settled-input !h-8 text-xs py-1"
                         value={editAlias}
+                        maxLength={12}
                         onChange={(e) => setEditAlias(e.target.value)}
                         autoFocus
                       />
@@ -164,6 +165,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
             <input
               className="settled-input flex-1"
               value={newMemberName}
+              maxLength={12}
               onChange={(e) => setNewMemberName(e.target.value)}
               placeholder="Enter member name"
             />

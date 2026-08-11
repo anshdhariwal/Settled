@@ -256,6 +256,7 @@ export default function Join({ onEnter }) {
                   <input
                     className="settled-input"
                     value={newMemberAlias}
+                    maxLength={12}
                     onChange={(e) => setNewMemberAlias(e.target.value)}
                     placeholder="e.g. Badal"
                     autoFocus
