@@ -15,6 +15,7 @@ import {
   IconCart,
   IconExchange,
   IconChevronRight,
+  IconShare,
 } from '../components/icons'
 import Overview from './Overview'
 import History from './History'
@@ -38,6 +39,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
   const [settlements, setSettlements] = useState([])
   const [activeTab, setActiveTab] = useState('overview')
   const [copiedCode, setCopiedCode] = useState(false)
+  const [copiedShareLink, setCopiedShareLink] = useState(false)
   const [showActionModal, setShowActionModal] = useState(false)
 
   async function loadAllData() {
@@ -149,6 +151,26 @@ export default function Clan({ memberId, onExit, viewOverride }) {
     setTimeout(() => setCopiedCode(false), 2000)
   }
 
+  function handleShareJoinLink() {
+    if (!clan?.join_code) return
+    const joinUrl = `${window.location.origin}/join?code=${clan.join_code}`
+    if (navigator.share) {
+      navigator.share({
+        title: clan.name,
+        text: `Join ${clan.name} on Settled:`,
+        url: joinUrl,
+      }).catch(() => {
+        safeCopy(joinUrl)
+        setCopiedShareLink(true)
+        setTimeout(() => setCopiedShareLink(false), 2000)
+      })
+    } else {
+      safeCopy(joinUrl)
+      setCopiedShareLink(true)
+      setTimeout(() => setCopiedShareLink(false), 2000)
+    }
+  }
+
   if (!clan) {
     return (
       <Shell>
@@ -175,7 +197,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={handleCopyJoinCode}
               className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-blue-400 hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
@@ -183,6 +205,14 @@ export default function Clan({ memberId, onExit, viewOverride }) {
             >
               <span>{clan.join_code}</span>
               {copiedCode ? <IconSuccessTick className="w-3.5 h-3.5 text-emerald-400" /> : <IconCopy className="w-3.5 h-3.5 text-zinc-500" />}
+            </button>
+            <button
+              onClick={handleShareJoinLink}
+              className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-[11px] font-semibold transition-colors flex items-center gap-1.5"
+              title="Share direct join link"
+            >
+              <span>Share</span>
+              {copiedShareLink ? <IconSuccessTick className="w-3.5 h-3.5 text-emerald-400" /> : <IconShare className="w-3.5 h-3.5 text-emerald-400/80" />}
             </button>
             <button
               onClick={() => navigate(viewOverride === 'settings' ? `/clan/${clanId}` : `/clan/${clanId}/settings`)}
