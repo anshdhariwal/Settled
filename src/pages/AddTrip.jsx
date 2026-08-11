@@ -128,7 +128,7 @@ export default function AddTrip({ people, clanId }) {
     if (itemDrafts.length === 0 || payTotal !== itemTotal) return
     setSaving(true)
     const { data: trip } = await supabase
-      .from('buy_trips')
+      .from('trips')
       .insert({ clan_id: clanId, date, place: place.trim() || 'Buy Trip' })
       .select()
       .single()
