@@ -39,7 +39,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
   async function handleVerifyLeaderDob() {
     if (!isValidDOB(leaderDob.trim())) {
       triggerDobShake()
-      setLeaderError('Enter valid DOB (DD-MM-YYYY) between 01-01-1500 and 31-12-2500.')
+      setLeaderError('Enter valid DOB (DD-MM-YYYY)')
       return
     }
     const { data: clanData } = await supabase.from('clans').select('passcode').eq('id', clanId).single()
