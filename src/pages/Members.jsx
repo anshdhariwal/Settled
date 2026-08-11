@@ -122,7 +122,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
           <span className="text-[11px] font-mono text-zinc-400">{members.length} member{members.length !== 1 ? 's' : ''}</span>
         </div>
 
-        <div className="divide-y divide-zinc-800/60">
+        <div className="p-3 space-y-2 select-none">
           {displayMembers.map((member) => {
             const balanceObj = balances.net_balances.find((nb) => nb.person === member.id)
             const isSelf = member.id === memberId
@@ -135,22 +135,26 @@ export default function Members({ members, balances, memberId, currentMember, cl
                 key={member.id}
                 data-member-id={member.id}
                 data-is-leader={member.is_creator}
-                className={`px-4 py-3 flex items-center gap-3 transition-colors ${
-                  isCurrentlyDragging ? 'bg-blue-500/10 border-l-2 border-blue-500' : ''
+                className={`p-3 rounded-xl border transition-all duration-150 flex items-center gap-3 select-none ${
+                  isCurrentlyDragging
+                    ? 'bg-blue-500/15 border-blue-500/60 shadow-xl scale-[1.02] z-20 relative'
+                    : 'bg-zinc-900/70 border-zinc-800/90 hover:border-zinc-700/70 hover:bg-zinc-800/40'
                 }`}
               >
                 {/* Touch Drag Handle */}
-                {!member.is_creator && !isEditing && (
+                {!member.is_creator && !isEditing ? (
                   <div
-                    className="touch-none cursor-grab active:cursor-grabbing p-1.5 text-zinc-500 hover:text-zinc-300 transition-colors flex items-center justify-center shrink-0 border-r border-zinc-800/80 pr-2 mr-0.5"
-                    title="Touch/Hold & Swipe to move up or down"
+                    className="w-7 h-7 rounded-lg bg-zinc-800/70 border border-zinc-700/50 flex items-center justify-center text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/60 active:bg-blue-500/20 active:text-blue-300 touch-none cursor-grab active:cursor-grabbing shrink-0 select-none transition-colors"
+                    title="Touch/Hold & Swipe to move"
                     onPointerDown={(e) => handlePointerDown(e, member.id)}
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
                     onPointerCancel={handlePointerUp}
                   >
-                    <IconGripVertical className="w-4 h-4 text-zinc-400" />
+                    <IconGripVertical className="w-3.5 h-3.5" />
                   </div>
+                ) : (
+                  <div className="w-7 h-7 shrink-0" aria-hidden="true" />
                 )}
 
                 {/* Avatar */}
@@ -159,7 +163,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                 </div>
 
                 {/* Member Info / Edit Form */}
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 select-none">
                   {isEditing ? (
                     <div className="flex gap-2 items-center">
                       <input
