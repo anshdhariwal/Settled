@@ -207,42 +207,41 @@ export default function Clan({ memberId, onExit, viewOverride }) {
   return (
     <div className="min-h-screen text-zinc-100 font-sans antialiased pb-28" style={{ backgroundColor: 'var(--bg-canvas)' }}>
       <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 px-4 py-3 sm:px-6">
-        <div className="max-w-xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo.svg" alt="Settled Logo" className="h-7 object-contain" />
+        <div className="max-w-xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <img src="/logo.svg" alt="Settled Logo" className="h-7 object-contain shrink-0" />
             <div className="w-px h-7 bg-zinc-700/60 shrink-0" aria-hidden="true" />
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-bold text-sm tracking-tight text-white">{clan.name}</h1>
-              </div>
-              <p className="text-[11px] text-zinc-500">Member: <span className="text-zinc-300 font-medium">{currentMember?.alias || 'You'}</span></p>
+            <div className="min-w-0 flex-1">
+              <h1 className="font-bold text-sm tracking-tight text-white truncate max-w-[130px] sm:max-w-[220px]" title={clan.name}>
+                {clan.name}
+              </h1>
+              <p className="text-[11px] text-zinc-500 truncate">Member: <span className="text-zinc-300 font-medium">{currentMember?.alias || 'You'}</span></p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={handleCopyJoinCode}
-              className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-blue-400 hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
-              title="Click to copy Join Code"
+              className="p-2 sm:px-2.5 sm:py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-blue-400 hover:bg-zinc-800 transition-colors flex items-center gap-1.5 shrink-0"
+              title={`Copy Join Code: ${clan.join_code}`}
             >
-              <span>{clan.join_code}</span>
-              {copiedCode ? <IconSuccessTick className="w-3.5 h-3.5 text-emerald-400" /> : <IconCopy className="w-3.5 h-3.5 text-zinc-500" />}
+              {copiedCode ? <IconSuccessTick className="w-4 h-4 text-emerald-400" /> : <IconCopy className="w-4 h-4 text-blue-400" />}
+              <span className="hidden sm:inline">{clan.join_code}</span>
             </button>
             <button
               onClick={handleShareJoinLink}
-              className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-[11px] font-semibold transition-colors flex items-center gap-1.5"
+              className="p-2 sm:px-2.5 sm:py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-[11px] font-semibold transition-colors flex items-center gap-1.5 shrink-0"
               title="Share direct join link"
             >
-              <span>Share</span>
-              {copiedShareLink ? <IconSuccessTick className="w-3.5 h-3.5 text-emerald-400" /> : <IconShare className="w-3.5 h-3.5 text-emerald-400/80" />}
+              {copiedShareLink ? <IconSuccessTick className="w-4 h-4 text-emerald-400" /> : <IconShare className="w-4 h-4 text-emerald-400/80" />}
+              <span className="hidden sm:inline">Share</span>
             </button>
             <button
               onClick={() => navigate(viewOverride === 'settings' ? `/clan/${clanId}` : `/clan/${clanId}/settings`)}
-              className="icon-btn"
+              className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800/60 transition-colors shrink-0"
               title="Settings"
             >
-              <div className="squish"></div>
-              <IconSettings className="w-4 h-4 text-zinc-300" />
+              <IconSettings className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -413,7 +412,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
       )}
 
       {showActionModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}>
           <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-zinc-700/60 action-sheet">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
               <h3 className="font-bold text-sm text-white">Add New Entry</h3>

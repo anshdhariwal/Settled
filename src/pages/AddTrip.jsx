@@ -530,7 +530,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
       )}
 
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
           <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-zinc-700/60 action-sheet text-left">
             <div className="space-y-1.5">
               <h3 className="font-bold text-base text-white">Proceed to Payment Breakdown?</h3>
