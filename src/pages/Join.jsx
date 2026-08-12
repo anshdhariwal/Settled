@@ -235,11 +235,10 @@ export default function Join({ onEnter }) {
                           type="button"
                           key={member.id}
                           onClick={() => setSelectedMemberId(member.id)}
-                          className={`w-full p-3 rounded-xl text-xs text-left border transition-all flex items-center justify-between ${
-                            isSelected
+                          className={`w-full p-3 rounded-xl text-xs text-left border transition-all flex items-center justify-between ${isSelected
                               ? 'bg-blue-500/10 border-blue-500/50 text-blue-300'
                               : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 flex items-center justify-center font-bold text-xs">
@@ -358,7 +357,7 @@ export default function Join({ onEnter }) {
                 className="btn btn-p flex-1 text-xs font-semibold bg-amber-400 text-zinc-950 hover:bg-amber-300"
                 onClick={handleVerifyLeaderDob}
               >
-                Verify & Claim Leader
+                Verify
               </button>
             </div>
           </div>

@@ -44,7 +44,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
     if (e.target.setPointerCapture) {
       try {
         e.target.setPointerCapture(e.pointerId)
-      } catch (err) {}
+      } catch (err) { }
     }
   }
 
@@ -74,7 +74,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
     if (e.target.releasePointerCapture) {
       try {
         e.target.releasePointerCapture(e.pointerId)
-      } catch (err) {}
+      } catch (err) { }
     }
     const currentList = localNonLeaders || baseNonLeaders
     setDraggingId(null)
@@ -143,11 +143,10 @@ export default function Members({ members, balances, memberId, currentMember, cl
                 key={member.id}
                 data-member-id={member.id}
                 data-is-leader={member.is_creator}
-                className={`p-3 rounded-xl border transition-all duration-150 flex items-center gap-3 select-none ${
-                  isCurrentlyDragging
+                className={`p-3 rounded-xl border transition-all duration-150 flex items-center gap-3 select-none ${isCurrentlyDragging
                     ? 'bg-blue-500/15 border-blue-500/60 shadow-xl scale-[1.02] z-20 relative'
                     : 'bg-zinc-900/70 border-zinc-800/90 hover:border-zinc-700/70 hover:bg-zinc-800/40'
-                }`}
+                  }`}
               >
                 {/* Touch Drag Handle */}
                 {!member.is_creator && !isEditing ? (
@@ -318,7 +317,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                 className="btn btn-p flex-1 text-xs font-semibold bg-amber-400 text-zinc-950 hover:bg-amber-300"
                 onClick={handleVerifyLeaderDob}
               >
-                Verify & Claim Leader
+                Verify
               </button>
             </div>
           </div>
