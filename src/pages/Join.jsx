@@ -132,13 +132,31 @@ export default function Join({ onEnter }) {
       setLeaderError('Enter valid DOB (DD-MM-YYYY) between 01-01-1500 and 31-12-2500.')
       return
     }
-    if (!clan?.passcode || leaderDob.trim() !== clan.passcode) {
+
+    setLoading(true)
+
+    // Use RPC server-side validation if available, fallback to comparison
+    let isValid = false
+    try {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('verify_clan_credentials', {
+        p_join_code: clan?.join_code || code,
+        p_passcode: leaderDob.trim(),
+      })
+      if (!rpcError && rpcData && rpcData.length > 0) {
+        isValid = Boolean(rpcData[0].is_valid)
+      } else {
+        isValid = clan?.passcode ? leaderDob.trim() === clan.passcode : false
+      }
+    } catch {
+      isValid = clan?.passcode ? leaderDob.trim() === clan.passcode : false
+    }
+
+    if (!isValid) {
+      setLoading(false)
       triggerDobShake()
       setLeaderError('Incorrect Leader DOB. Access denied.')
       return
     }
-    setLeaderError('')
-    setLoading(true)
 
     // Find existing creator member
     const { data: creator } = await supabase
