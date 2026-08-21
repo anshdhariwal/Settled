@@ -141,8 +141,8 @@ export default function History({ trips, items, shares, payments, generalTx, get
       ))}
 
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-rose-500/30 action-sheet">
+        <div className="settled-modal-backdrop">
+          <div className="settled-modal-card settled-card p-5 space-y-4 border border-rose-500/30 text-left">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
                 <IconAlertTriangle className="w-5 h-5" />

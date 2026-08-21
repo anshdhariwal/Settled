@@ -415,8 +415,8 @@ export default function Clan({ memberId, onExit, viewOverride }) {
       )}
 
       {showActionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-zinc-700/60 action-sheet">
+        <div className="settled-modal-backdrop">
+          <div className="settled-modal-card settled-card p-5 space-y-4 border border-zinc-700/60 text-left">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
               <h3 className="font-bold text-sm text-white">Add New Entry</h3>
               <button onClick={() => setShowActionModal(false)} className="back-btn" title="Close">

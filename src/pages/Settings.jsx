@@ -176,8 +176,8 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
       </div>
 
       {showLeaveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-zinc-700/60 action-sheet text-left">
+        <div className="settled-modal-backdrop">
+          <div className="settled-modal-card settled-card p-5 space-y-4 border border-zinc-700/60 text-left">
             <div className="space-y-1.5">
               <h3 className="font-bold text-base text-white">Leave Clan?</h3>
               <p className="text-xs text-zinc-400">

@@ -278,8 +278,8 @@ export default function Members({ members, balances, memberId, currentMember, cl
       )}
 
       {showLeaderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
-          <form onSubmit={(e) => { e.preventDefault(); handleVerifyLeaderDob(); }} className="w-full max-w-sm settled-card p-5 space-y-4 border border-amber-500/40 action-sheet text-left">
+        <div className="settled-modal-backdrop">
+          <form onSubmit={(e) => { e.preventDefault(); handleVerifyLeaderDob(); }} className="settled-modal-card settled-card p-5 space-y-4 border border-amber-500/40 text-left">
             <div className="space-y-1.5">
               <h3 className="font-bold text-base text-white">Leader Access Verification</h3>
               <p className="text-xs text-zinc-400">
