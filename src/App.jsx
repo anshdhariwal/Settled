@@ -4,6 +4,7 @@ import Landing from './pages/Landing'
 import Create from './pages/Create'
 import Join from './pages/Join'
 import Clan from './pages/Clan'
+import Admin from './pages/Admin'
 
 const CLAN_ID_KEY = 'settled_clan_id'
 const MEMBER_ID_KEY = 'settled_member_id'
@@ -99,6 +100,7 @@ export default function App() {
         <Route path="/clan/add-general" element={clanId && memberId ? <Clan memberId={memberId} onExit={exitClan} viewOverride="addgeneral" /> : <Navigate to="/" replace />} />
         <Route path="/clan/trip/:tripId" element={clanId && memberId ? <Clan memberId={memberId} onExit={exitClan} viewOverride="tripsummary" /> : <Navigate to="/" replace />} />
 
+        <Route path="/admin" element={<Admin />} />
         <Route path="/clan/:legacyClanId/*" element={<Navigate to="/clan" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
