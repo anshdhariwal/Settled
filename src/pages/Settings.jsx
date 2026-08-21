@@ -15,6 +15,7 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
   const [copied, setCopied] = useState(false)
 
   async function saveClanName() {
+    if (!currentMember?.is_creator) return
     await supabase.from('clans').update({ name: clanName }).eq('id', clanId)
     setSavedMsg('Clan name updated!')
     setTimeout(() => setSavedMsg(''), 2000)
@@ -89,10 +90,17 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
 
       <div className="space-y-4">
         <Field label="Clan Name">
-          <form onSubmit={(e) => { e.preventDefault(); saveClanName(); }} className="flex gap-2">
-            <input className="settled-input flex-1" value={clanName} maxLength={24} onChange={(e) => setClanName(e.target.value)} />
-            <button type="submit" className="btn btn-s btn-sm shrink-0 w-auto px-4">Save</button>
-          </form>
+          {currentMember?.is_creator ? (
+            <form onSubmit={(e) => { e.preventDefault(); saveClanName(); }} className="flex gap-2">
+              <input className="settled-input flex-1" value={clanName} maxLength={24} onChange={(e) => setClanName(e.target.value)} />
+              <button type="submit" className="btn btn-s btn-sm shrink-0 w-auto px-4">Save</button>
+            </form>
+          ) : (
+            <div className="space-y-1">
+              <input className="settled-input flex-1 opacity-60 cursor-not-allowed bg-zinc-900/40" value={clan.name} disabled readOnly />
+              <p className="text-[11px] text-zinc-500 font-mono">Only clan leader can update clan name.</p>
+            </div>
+          )}
         </Field>
 
         <Field label="Your Name / Alias">

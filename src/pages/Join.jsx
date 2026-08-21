@@ -210,13 +210,14 @@ export default function Join({ onEnter }) {
 
         {step === 'code' && (
           <form onSubmit={(e) => { e.preventDefault(); if (code.length >= 6) handleVerifyCode(); }} className="space-y-4">
-            <Field label="Enter 6-Character Join Code">
+            <Field label="Enter 6-Digit Join Code">
               <input
                 className="settled-input text-center tracking-[0.2em] font-mono text-lg uppercase"
                 value={code}
                 maxLength={6}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="e.g. AB12CD"
+                onChange={(e) => setCode(e.target.value.toUpperCase().trim())}
+                placeholder="e.g. 482910"
+                inputMode="numeric"
                 autoFocus
               />
             </Field>

@@ -8,10 +8,7 @@ import { formatDOB, isValidDOB } from '../lib/formatINR'
 const PENDING_KEY = 'settled_pending_created_clan'
 
 function generateJoinCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let code = ''
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
-  return code
+  return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
 function safeCopy(text) {
