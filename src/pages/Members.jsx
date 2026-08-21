@@ -4,7 +4,7 @@ import { IconPlus, IconTrash, IconPencil, IconCrown, IconKey, IconGripVertical }
 import { formatINR, formatDOB, isValidDOB } from '../lib/formatINR'
 import Modal from '../components/Modal'
 
-export default function Members({ members, balances, memberId, currentMember, clanId, onRefresh }) {
+export default function Members({ members, balances, memberId, currentMember, clanId, joinCode, onRefresh }) {
   const [newMemberName, setNewMemberName] = useState('')
   const [editingMemberId, setEditingMemberId] = useState(null)
   const [editAlias, setEditAlias] = useState('')
@@ -111,8 +111,20 @@ export default function Members({ members, balances, memberId, currentMember, cl
       setLeaderError('Enter valid DOB (DD-MM-YYYY)')
       return
     }
-    const { data: clanData } = await supabase.from('clans').select('passcode').eq('id', clanId).single()
-    if (!clanData?.passcode || leaderDob.trim() !== clanData.passcode) {
+    let isValid = false
+    try {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('verify_clan_credentials', {
+        p_join_code: joinCode || '',
+        p_passcode: leaderDob.trim(),
+      })
+      if (!rpcError && rpcData && rpcData.length > 0) {
+        isValid = Boolean(rpcData[0].is_valid)
+      }
+    } catch {
+      isValid = false
+    }
+
+    if (!isValid) {
       triggerDobShake()
       setLeaderError('Incorrect Leader DOB. Access denied.')
       return

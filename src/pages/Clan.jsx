@@ -331,9 +331,9 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   }}
                   onGoAddTrip={() => {
                     setEditingTrip(null)
-                    navigate(`/clan/${clanId}/add-trip`)
+                    navigate('/clan/add-trip')
                   }}
-                  onGoAddGeneral={() => navigate(`/clan/${clanId}/add-general`)}
+                  onGoAddGeneral={() => navigate('/clan/add-general')}
                 />
               </div>
             )}
@@ -391,6 +391,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   memberId={memberId}
                   currentMember={currentMember}
                   clanId={clanId}
+                  joinCode={clan?.join_code}
                   onRefresh={loadAllData}
                 />
               </div>

@@ -33,7 +33,7 @@ export default function Join({ onEnter }) {
 
   function showToastError(msg) {
     setError(msg)
-    setTimeout(() => setError(''), 3500)
+    setTimeout(() => setError(''), 3000)
   }
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import { Shell, Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconCopy, IconSuccessTick, IconPlus, IconClose } from '../components/icons'
 import { formatDOB, isValidDOB } from '../lib/formatINR'
+import { copyToClipboard } from '../lib/copyToClipboard'
 
 const PENDING_KEY = 'settled_pending_created_clan'
 
@@ -11,31 +12,6 @@ function generateJoinCode() {
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
-function safeCopy(text) {
-  if (!text) return
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text))
-  } else {
-    fallbackCopy(text)
-  }
-}
-
-function fallbackCopy(text) {
-  try {
-    const textArea = document.createElement('textarea')
-    textArea.value = text
-    textArea.style.position = 'fixed'
-    textArea.style.left = '-9999px'
-    textArea.style.top = '-9999px'
-    document.body.appendChild(textArea)
-    textArea.focus()
-    textArea.select()
-    document.execCommand('copy')
-    document.body.removeChild(textArea)
-  } catch (e) {
-    // ignore
-  }
-}
 
 function getStoredPendingState() {
   try {
@@ -76,7 +52,7 @@ export default function Create({ onEnter }) {
 
   function showToastError(msg) {
     setError(msg)
-    setTimeout(() => setError(''), 3500)
+    setTimeout(() => setError(''), 3000)
   }
 
   function addMemberTag(name) {
@@ -178,7 +154,7 @@ export default function Create({ onEnter }) {
 
   function handleCopyCode() {
     if (!result?.joinCode) return
-    safeCopy(result.joinCode)
+    copyToClipboard(result.joinCode)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

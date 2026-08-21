@@ -596,7 +596,12 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
                 <select
                   className="settled-input !text-xs py-1.5"
                   value={psFrom}
-                  onChange={(e) => setPsFrom(e.target.value)}
+                  onChange={(e) => {
+                    const newFrom = e.target.value
+                    setPsFrom(newFrom)
+                    const firstOther = people.find((p) => p.id !== newFrom)
+                    if (firstOther) setPsTo(firstOther.id)
+                  }}
                 >
                   {people.map((p) => (
                     <option key={p.id} value={p.id}>{p.alias}</option>

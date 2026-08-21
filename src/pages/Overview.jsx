@@ -60,7 +60,7 @@ export default function Overview({ balances, getMemberName, onSettle, onGoAddTri
           <div className="space-y-2">
             {balances.settlements.map((s, idx) => (
               <div
-                key={idx}
+                key={`settlement-${idx}`}
                 className="flex justify-between items-center p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50 transition-all"
               >
                 <div className="text-xs text-zinc-200 flex items-center gap-1.5 flex-wrap">

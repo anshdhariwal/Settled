@@ -3,7 +3,7 @@ import { IconTrash, IconCart, IconExchange, IconArrowRight, IconAlertTriangle, I
 import { formatINR } from '../lib/formatINR'
 import Modal from '../components/Modal'
 
-export default function History({ trips, items, shares, payments, generalTx, getMemberName, onViewSummary, onEditTrip, onDeleteTrip, onDeleteGeneral }) {
+export default function History({ trips, items, shares, payments, generalTx, getMemberName, onViewTrip, onEditTrip, onDeleteTrip, onDeleteGeneral }) {
   const [expandedTripId, setExpandedTripId] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
 
@@ -57,9 +57,9 @@ export default function History({ trips, items, shares, payments, generalTx, get
               <div className="text-right">
                 <p className="font-bold font-mono text-amber-400 text-sm">₹{formatINR(tripTotal)}</p>
                 <div className="flex gap-2 justify-end mt-1 items-center">
-                  {onViewSummary && (
+                  {onViewTrip && (
                     <button
-                      onClick={() => onViewSummary(trip)}
+                      onClick={() => onViewTrip(trip)}
                       className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline"
                     >
                       View Summary
@@ -103,7 +103,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
                           <div key={it.id} className="flex justify-between p-2 rounded bg-zinc-900/60 border border-zinc-800">
                             <div>
                               <p className="font-medium text-white">{it.name}</p>
-                              <p className="text-[10px] text-zinc-350">Shared by: {itemShares.map((s) => getMemberName(s.person_id)).join(', ')}</p>
+                              <p className="text-[10px] text-zinc-350">Shared by: {itemShares.length > 0 ? itemShares.map((s) => getMemberName(s.person_id)).join(', ') : 'All Members'}</p>
                             </div>
                             <p className="font-mono text-zinc-300">₹{formatINR(it.price)}</p>
                           </div>
