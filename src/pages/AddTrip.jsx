@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
-import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, IconMapPin, IconChevronUp, IconChevronDown, IconPencil, IconSuccessTick } from '../components/icons'
+import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, IconMapPin, IconChevronUp, IconChevronDown, IconPencil, IconSuccessTick, IconArrowRight, IconExchange } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
 
 function ShareSelector({ people, selected, onChange, shakeShare }) {
@@ -84,6 +84,28 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
       return { person_id: p.id, amount: existingPay ? String(existingPay.amount) : '' }
     })
   )
+  const [preSettlementDrafts, setPreSettlementDrafts] = useState(
+    editingTrip?.pre_settlements ? editingTrip.pre_settlements.map((s) => ({ from_person: s.from_person, to_person: s.to_person, amount: String(s.amount) })) : []
+  )
+  const [psFrom, setPsFrom] = useState(people[0]?.id || '')
+  const [psTo, setPsTo] = useState(people[1]?.id || '')
+  const [psAmount, setPsAmount] = useState('')
+
+  function addPreSettlement() {
+    if (!psFrom || !psTo || psFrom === psTo || !psAmount || Number(psAmount) <= 0) {
+      return
+    }
+    setPreSettlementDrafts([
+      ...preSettlementDrafts,
+      { from_person: psFrom, to_person: psTo, amount: Number(psAmount) },
+    ])
+    setPsAmount('')
+  }
+
+  function removePreSettlement(idx) {
+    setPreSettlementDrafts(preSettlementDrafts.filter((_, i) => i !== idx))
+  }
+
   const [saving, setSaving] = useState(false)
   const [shakeFields, setShakeFields] = useState([])
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -183,6 +205,22 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
       const realPayments = payDrafts.filter((p) => Number(p.amount) > 0)
       if (realPayments.length > 0) {
         await supabase.from('trip_payments').insert(realPayments.map((p) => ({ trip_id: tripId, person_id: p.person_id, amount: Number(p.amount) })))
+      }
+
+      if (editingTrip) {
+        await supabase.from('settlements').delete().eq('trip_id', editingTrip.id)
+      }
+      const validPreSettlements = preSettlementDrafts.filter((s) => Number(s.amount) > 0)
+      if (validPreSettlements.length > 0) {
+        await supabase.from('settlements').insert(
+          validPreSettlements.map((s) => ({
+            clan_id: clanId,
+            trip_id: tripId,
+            from_person: s.from_person,
+            to_person: s.to_person,
+            amount: Number(s.amount),
+          }))
+        )
       }
 
       if (onDoneEditing) onDoneEditing()
@@ -519,11 +557,121 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
           <div className="flex gap-2">
             <button className="btn btn-s flex-1" onClick={() => setStep('items')}>Back to Items</button>
             <button
-              disabled={saving || itemDrafts.length === 0 || payTotal !== itemTotal}
-              className="btn btn-p flex-1 disabled:opacity-40"
+              disabled={itemDrafts.length === 0 || payTotal !== itemTotal}
+              className="btn btn-p flex-1 disabled:opacity-40 font-semibold"
+              onClick={() => setStep('pre_settlements')}
+            >
+              <span>Next: Direct Transfers</span>
+              <IconChevronRight className="w-4 h-4 ml-1" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 'pre_settlements' && (
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <p className="sec-lbl text-xs font-bold text-zinc-200">Direct Pre-Settlements (Optional)</p>
+            <p className="text-xs text-zinc-400">
+              Did anyone already pay someone back directly for this trip before calculating the summary?
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-3">
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label className="block text-zinc-400 mb-1 font-medium">From (Payer)</label>
+                <select
+                  className="settled-input !text-xs py-1.5"
+                  value={psFrom}
+                  onChange={(e) => setPsFrom(e.target.value)}
+                >
+                  {people.map((p) => (
+                    <option key={p.id} value={p.id}>{p.alias}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-zinc-400 mb-1 font-medium">To (Receiver)</label>
+                <select
+                  className="settled-input !text-xs py-1.5"
+                  value={psTo}
+                  onChange={(e) => setPsTo(e.target.value)}
+                >
+                  {people.filter((p) => p.id !== psFrom).map((p) => (
+                    <option key={p.id} value={p.id}>{p.alias}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex-1 settled-input p-0 flex items-center overflow-hidden">
+                <span className="pl-3 pr-1 text-zinc-400 font-mono text-xs select-none">₹</span>
+                <input
+                  placeholder="Transfer Amount"
+                  inputMode="decimal"
+                  maxLength={7}
+                  className="flex-1 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 py-1.5 pr-2"
+                  value={psAmount}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '')
+                    setPsAmount(val)
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                className="btn btn-s text-xs px-3 py-1.5 shrink-0 flex items-center gap-1"
+                onClick={addPreSettlement}
+              >
+                <IconPlus className="w-3.5 h-3.5" />
+                <span>Add Transfer</span>
+              </button>
+            </div>
+          </div>
+
+          {preSettlementDrafts.length > 0 && (
+            <div className="space-y-2">
+              <p className="sec-lbl text-xs font-bold text-zinc-200">Recorded Pre-Transfers ({preSettlementDrafts.length})</p>
+              <div className="space-y-2">
+                {preSettlementDrafts.map((st, idx) => {
+                  const fromName = people.find((p) => p.id === st.from_person)?.alias || 'Unknown'
+                  const toName = people.find((p) => p.id === st.to_person)?.alias || 'Unknown'
+
+                  return (
+                    <div key={idx} className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 font-semibold text-white">
+                        <span className="text-rose-400">{fromName}</span>
+                        <IconArrowRight className="w-3.5 h-3.5 text-zinc-500" />
+                        <span className="text-emerald-400">{toName}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono font-bold text-amber-400">₹{formatINR(st.amount)}</span>
+                        <button
+                          type="button"
+                          onClick={() => removePreSettlement(idx)}
+                          className="icon-btn icon-btn-danger p-1 text-zinc-400 hover:text-rose-400"
+                        >
+                          <IconTrash className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-2">
+            <button className="btn btn-s flex-1" onClick={() => setStep('payments')}>Back to Payments</button>
+            <button
+              disabled={saving}
+              className="btn btn-p flex-1 disabled:opacity-40 font-semibold"
               onClick={save}
             >
-              {saving ? (editingTrip ? 'Updating...' : 'Saving...') : (editingTrip ? 'Update Buy Trip' : 'Save Buy Trip')}
+              {saving ? (editingTrip ? 'Updating...' : 'Saving...') : (editingTrip ? 'Update Buy Trip' : 'Save & View Summary')}
             </button>
           </div>
         </div>

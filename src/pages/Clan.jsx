@@ -358,7 +358,8 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                       shared_by: shares.filter((s) => s.item_id === it.id).map((s) => s.person_id),
                     }))
                     const tripPayments = payments.filter((p) => p.trip_id === trip.id)
-                    setEditingTrip({ id: trip.id, place: trip.place, date: trip.date, items: tripItems, payments: tripPayments })
+                    const tripPreSettlements = settlements.filter((s) => s.trip_id === trip.id)
+                    setEditingTrip({ id: trip.id, place: trip.place, date: trip.date, items: tripItems, payments: tripPayments, pre_settlements: tripPreSettlements })
                     navigate(`/clan/${clanId}/add-trip`)
                   }}
                   onDeleteTrip={async (id) => {
@@ -368,6 +369,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                       await supabase.from('trip_item_shares').delete().in('item_id', itemIds)
                     }
                     await supabase.from('trip_payments').delete().eq('trip_id', id)
+                    await supabase.from('settlements').delete().eq('trip_id', id)
                     await supabase.from('trip_items').delete().eq('trip_id', id)
                     await supabase.from('trips').delete().eq('id', id)
                     await loadAllData()

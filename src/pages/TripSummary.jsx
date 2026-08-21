@@ -17,6 +17,9 @@ export default function TripSummary({ trip, items, shares, payments, members, cl
   const [copiedSummary, setCopiedSummary] = useState(false)
   const [showPayers, setShowPayers] = useState(false)
   const [showItems, setShowItems] = useState(false)
+  const [showPreSettlements, setShowPreSettlements] = useState(false)
+
+  const tripPreSettlements = useMemo(() => (settlements || []).filter((s) => s.trip_id === trip.id), [settlements, trip.id])
 
   const tripItems = useMemo(() => (items || []).filter((it) => it.trip_id === trip.id), [items, trip.id])
   const tripPayments = useMemo(() => (payments || []).filter((p) => p.trip_id === trip.id), [payments, trip.id])
@@ -51,9 +54,13 @@ export default function TripSummary({ trip, items, shares, payments, members, cl
       people: members.map((m) => m.id),
       trips: tripsInput,
       general_transactions: [],
-      settlements: [],
+      settlements: tripPreSettlements.map((s) => ({
+        from: s.from_person,
+        to: s.to_person,
+        amount: Number(s.amount),
+      })),
     })
-  }, [members, trip, tripItems, tripPayments, shares])
+  }, [members, trip, tripItems, tripPayments, shares, tripPreSettlements])
 
   // Group items by exact share set (e.g. "Ansh, Badal" or "All 5 Members")
   const groupedItems = useMemo(() => {
@@ -89,8 +96,16 @@ export default function TripSummary({ trip, items, shares, payments, members, cl
 
     const tripSettlements = calculation.settlements || calculation.settlementsSuggested || []
 
+    if (tripPreSettlements.length > 0) {
+      summaryText += `*Direct Pre-Transfers:*\n`
+      tripPreSettlements.forEach((st) => {
+        summaryText += `• ${getMemberName(st.from_person)} -> ${getMemberName(st.to_person)}: ₹ ${formatINR(st.amount)}\n`
+      })
+      summaryText += `\n`
+    }
+
     if (tripSettlements.length > 0) {
-      summaryText += `*Direct Settlements:*\n`
+      summaryText += `*Remaining Direct Settlements:*\n`
       tripSettlements.forEach((st) => {
         summaryText += `• ${getMemberName(st.from)} -> ${getMemberName(st.to)}: ₹ ${formatINR(st.amount)}\n`
       })
@@ -253,7 +268,35 @@ export default function TripSummary({ trip, items, shares, payments, members, cl
         </div>
       </div>
 
-      {/* 4. Collapsible Payer Info (Accordion Slide Animation) */}
+      {/* 4. Collapsible Recorded Direct Pre-Settlements */}
+      {tripPreSettlements.length > 0 && (
+        <div className="border-t border-zinc-800/80 pt-3">
+          <button
+            onClick={() => setShowPreSettlements(!showPreSettlements)}
+            className="w-full flex items-center justify-between text-xs font-bold text-zinc-300 hover:text-white py-2"
+          >
+            <span>Recorded Pre-Transfers ({tripPreSettlements.length})</span>
+            {showPreSettlements ? <IconChevronUp className="w-4 h-4 text-zinc-400" /> : <IconChevronDown className="w-4 h-4 text-zinc-400" />}
+          </button>
+
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showPreSettlements ? 'max-h-[500px] opacity-100 pt-2' : 'max-h-0 opacity-0'}`}>
+            <div className="flex flex-wrap gap-2.5">
+              {tripPreSettlements.map((s, sIdx) => (
+                <div key={sIdx} className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm flex items-center justify-between gap-3 flex-1 min-w-[170px]">
+                  <div className="flex items-center gap-2 font-semibold text-white">
+                    <span className="text-rose-400">{getMemberName(s.from_person)}</span>
+                    <IconArrowRight className="w-3.5 h-3.5 text-zinc-500" />
+                    <span className="text-emerald-400">{getMemberName(s.to_person)}</span>
+                  </div>
+                  <span className="font-mono font-bold text-amber-400">₹ {formatINR(s.amount)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Collapsible Payer Info (Accordion Slide Animation) */}
       <div className="border-t border-zinc-800/80 pt-3">
         <button
           onClick={() => setShowPayers(!showPayers)}
