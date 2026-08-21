@@ -23,7 +23,11 @@ export default function TripSummary({ trip, items, shares, payments, settlements
 
   const tripItems = useMemo(() => (items || []).filter((it) => it.trip_id === trip.id), [items, trip.id])
   const tripPayments = useMemo(() => (payments || []).filter((p) => p.trip_id === trip.id), [payments, trip.id])
-  const tripTotal = useMemo(() => tripItems.reduce((sum, it) => sum + Number(it.price), 0), [tripItems])
+  const tripTotal = useMemo(() => {
+    const itemTotal = tripItems.reduce((sum, it) => sum + Number(it.price), 0)
+    const paymentTotal = tripPayments.reduce((sum, p) => sum + Number(p.amount), 0)
+    return itemTotal > 0 ? itemTotal : paymentTotal
+  }, [tripItems, tripPayments])
 
   function getMemberName(id) {
     const m = members.find((x) => x.id === id)

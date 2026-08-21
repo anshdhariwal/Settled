@@ -150,7 +150,11 @@ export default function Clan({ memberId, onExit, viewOverride }) {
   }, [members, trips, items, shares, payments, generalTx, settlements])
 
   function getMemberName(id) {
-    return members.find((m) => m.id === id)?.alias || '?'
+    const m = members.find((x) => x.id === id)
+    if (m) return m.alias
+    const creator = members.find((x) => x.is_creator)
+    if (creator) return creator.alias
+    return members[0]?.alias || 'Leader'
   }
 
   const currentMember = members.find((m) => m.id === memberId)

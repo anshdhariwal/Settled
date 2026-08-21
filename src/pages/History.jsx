@@ -29,8 +29,18 @@ export default function History({ trips, items, shares, payments, generalTx, get
       {trips.map((trip) => {
         const tripItems = items.filter((it) => it.trip_id === trip.id)
         const tripPayments = payments.filter((p) => p.trip_id === trip.id)
-        const tripTotal = tripItems.reduce((sum, it) => sum + Number(it.price), 0)
+        const itemTotal = tripItems.reduce((sum, it) => sum + Number(it.price), 0)
+        const paymentTotal = tripPayments.reduce((sum, p) => sum + Number(p.amount), 0)
+        const tripTotal = itemTotal > 0 ? itemTotal : paymentTotal
         const isExpanded = expandedTripId === trip.id
+
+        const toggleLabel = isExpanded
+          ? 'Hide Details'
+          : tripItems.length > 0
+          ? `View ${tripItems.length} Items`
+          : tripPayments.length > 0
+          ? `View ${tripPayments.length} Payments`
+          : 'View Details'
 
         return (
           <div key={trip.id} className="settled-card p-4 space-y-3">
@@ -40,7 +50,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
                   <IconCart className="w-3 h-3 text-emerald-400" />
                   <span>Buy Trip</span>
                 </span>
-                <h4 className="font-bold text-sm text-white mt-1">{trip.place || 'Grocery Store'}</h4>
+                <h4 className="font-bold text-sm text-white mt-1">{trip.place || 'Buy Trip'}</h4>
                 <p className="text-[11px] text-zinc-500">{trip.date} · Created by {getMemberName(trip.created_by)}</p>
               </div>
               <div className="text-right">
@@ -66,7 +76,7 @@ export default function History({ trips, items, shares, payments, generalTx, get
                     onClick={() => setExpandedTripId(isExpanded ? null : trip.id)}
                     className="text-xs text-zinc-400 hover:text-white underline"
                   >
-                    {isExpanded ? 'Hide Items' : `View ${tripItems.length} Items`}
+                    {toggleLabel}
                   </button>
                   <button
                     onClick={() => setDeleteConfirm({ type: 'trip', id: trip.id, name: trip.place || 'Buy Trip' })}
@@ -82,21 +92,27 @@ export default function History({ trips, items, shares, payments, generalTx, get
 
             {isExpanded && (
               <div className="pt-3 border-t border-zinc-800/80 space-y-2 text-xs">
-                <p className="font-semibold text-zinc-400">Itemized Breakdown:</p>
-                <div className="space-y-1.5">
-                  {tripItems.map((it) => {
-                    const itemShares = shares.filter((s) => s.item_id === it.id)
-                    return (
-                      <div key={it.id} className="flex justify-between p-2 rounded bg-zinc-900/60 border border-zinc-800">
-                        <div>
-                          <p className="font-medium text-white">{it.name}</p>
-                          <p className="text-[10px] text-zinc-350">Shared by: {itemShares.map((s) => getMemberName(s.person_id)).join(', ')}</p>
-                        </div>
-                        <p className="font-mono text-zinc-300">₹{formatINR(it.price)}</p>
-                      </div>
-                    )
-                  })}
-                </div>
+                {tripItems.length > 0 ? (
+                  <>
+                    <p className="font-semibold text-zinc-400">Itemized Breakdown:</p>
+                    <div className="space-y-1.5">
+                      {tripItems.map((it) => {
+                        const itemShares = shares.filter((s) => s.item_id === it.id)
+                        return (
+                          <div key={it.id} className="flex justify-between p-2 rounded bg-zinc-900/60 border border-zinc-800">
+                            <div>
+                              <p className="font-medium text-white">{it.name}</p>
+                              <p className="text-[10px] text-zinc-350">Shared by: {itemShares.map((s) => getMemberName(s.person_id)).join(', ')}</p>
+                            </div>
+                            <p className="font-mono text-zinc-300">₹{formatINR(it.price)}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-[11px] text-zinc-400 italic">No line items recorded for this trip.</p>
+                )}
 
                 <p className="font-semibold text-zinc-400 pt-1">Payment Contributions:</p>
                 <div className="flex flex-wrap gap-2">

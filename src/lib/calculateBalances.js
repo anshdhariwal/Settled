@@ -7,18 +7,30 @@ export function calculateBalances(input) {
   const owedTotal = Object.fromEntries(people.map((p) => [p, 0]))
 
   for (const trip of trips) {
-    for (const item of trip.items) {
-      const share = item.price / item.shared_by.length
-      for (const person of item.shared_by) {
+    if (trip.items && trip.items.length > 0) {
+      for (const item of trip.items) {
+        if (!item.shared_by || item.shared_by.length === 0) continue
+        const share = item.price / item.shared_by.length
+        for (const person of item.shared_by) {
+          if (!(person in net)) continue
+          net[person] -= share
+          owedTotal[person] += share
+        }
+      }
+    } else if (trip.payments && trip.payments.length > 0 && people.length > 0) {
+      const totalPayments = trip.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0)
+      const share = totalPayments / people.length
+      for (const person of people) {
         if (!(person in net)) continue
         net[person] -= share
         owedTotal[person] += share
       }
     }
-    for (const payment of trip.payments) {
+
+    for (const payment of trip.payments || []) {
       if (!(payment.person in net)) continue
-      net[payment.person] += payment.amount
-      paidTotal[payment.person] += payment.amount
+      net[payment.person] += Number(payment.amount || 0)
+      paidTotal[payment.person] += Number(payment.amount || 0)
     }
   }
 
