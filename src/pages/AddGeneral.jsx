@@ -12,11 +12,13 @@ export default function AddGeneral({ people, clanId }) {
   const [toPerson, setToPerson] = useState(people[1]?.id || '')
   const [amount, setAmount] = useState('')
   const [saving, setSaving] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   async function save() {
     if (!amount || Number(amount) <= 0 || !fromPerson || !toPerson || fromPerson === toPerson) return
     setSaving(true)
-    await supabase.from('general_transactions').insert({
+    setErrorMsg('')
+    const { error: insertError } = await supabase.from('general_transactions').insert({
       clan_id: clanId,
       date,
       description: description.trim() || 'General Payment',
@@ -25,6 +27,10 @@ export default function AddGeneral({ people, clanId }) {
       amount: Number(amount),
     })
     setSaving(false)
+    if (insertError) {
+      setErrorMsg('Failed to record transaction. Please try again.')
+      return
+    }
     navigate('/clan')
   }
 
@@ -36,6 +42,12 @@ export default function AddGeneral({ people, clanId }) {
         </button>
         <h2 className="ph-title">New General Transaction</h2>
       </div>
+
+      {errorMsg && (
+        <p className="text-xs text-rose-400 bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
+          {errorMsg}
+        </p>
+      )}
 
       {people.length < 2 ? (
         <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs space-y-3">
@@ -59,7 +71,16 @@ export default function AddGeneral({ people, clanId }) {
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Payer (Who Paid)">
-            <select className="settled-select" value={fromPerson} onChange={(e) => setFromPerson(e.target.value)}>
+            <select
+              className="settled-select"
+              value={fromPerson}
+              onChange={(e) => {
+                const newFrom = e.target.value
+                setFromPerson(newFrom)
+                const firstOther = people.find((p) => p.id !== newFrom)
+                if (firstOther) setToPerson(firstOther.id)
+              }}
+            >
               {people.map((p) => (
                 <option key={p.id} value={p.id}>{p.alias}</option>
               ))}
@@ -67,7 +88,7 @@ export default function AddGeneral({ people, clanId }) {
           </Field>
           <Field label="Recipient (Who Received)">
             <select className="settled-select" value={toPerson} onChange={(e) => setToPerson(e.target.value)}>
-              {people.map((p) => (
+              {people.filter((p) => p.id !== fromPerson).map((p) => (
                 <option key={p.id} value={p.id}>{p.alias}</option>
               ))}
             </select>

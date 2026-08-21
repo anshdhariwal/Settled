@@ -6,7 +6,7 @@ import { IconChevronLeft, IconCopy, IconSuccessTick, IconLogOut, IconAlertTriang
 import { copyToClipboard } from '../lib/copyToClipboard'
 import Modal from '../components/Modal'
 
-export default function Settings({ clan, currentMember, clanId, memberId, onExit }) {
+export default function Settings({ clan, currentMember, clanId, memberId, onExit, onRefresh }) {
   const navigate = useNavigate()
   const [clanName, setClanName] = useState(clan.name)
   const [alias, setAlias] = useState(currentMember?.alias || '')
@@ -18,14 +18,17 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
 
   async function saveClanName() {
     if (!currentMember?.is_creator) return
-    await supabase.from('clans').update({ name: clanName }).eq('id', clanId)
+    await supabase.from('clans').update({ name: clanName.trim() }).eq('id', clanId)
     setSavedMsg('Clan name updated!')
+    if (onRefresh) onRefresh()
     setTimeout(() => setSavedMsg(''), 2000)
   }
 
   async function saveAlias() {
-    await supabase.from('clan_members').update({ alias }).eq('id', memberId)
+    if (!alias.trim()) return
+    await supabase.from('clan_members').update({ alias: alias.trim() }).eq('id', memberId)
     setSavedMsg('Alias updated!')
+    if (onRefresh) onRefresh()
     setTimeout(() => setSavedMsg(''), 2000)
   }
 

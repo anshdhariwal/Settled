@@ -10,6 +10,7 @@ export function calculateBalances(input) {
     if (trip.items && trip.items.length > 0) {
       for (const item of trip.items) {
         const sharers = (item.shared_by && item.shared_by.length > 0) ? item.shared_by : people
+        if (sharers.length === 0) continue
         const share = item.price / sharers.length
         for (const person of sharers) {
           if (!(person in net)) continue

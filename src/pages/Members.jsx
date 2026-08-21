@@ -16,6 +16,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
   const [draggingId, setDraggingId] = useState(null)
   const [localNonLeaders, setLocalNonLeaders] = useState(null)
   const [removeMemberConfirm, setRemoveMemberConfirm] = useState(null)
+  const [addMemberError, setAddMemberError] = useState('')
 
   useEffect(() => {
     setLocalNonLeaders(null)
@@ -84,9 +85,21 @@ export default function Members({ members, balances, memberId, currentMember, cl
   }
 
   async function handleAddMember() {
-    if (!newMemberName.trim()) return
+    const cleanName = newMemberName.trim()
+    if (!cleanName) return
     if (members.length >= 10) return
-    await supabase.from('clan_members').insert({ clan_id: clanId, alias: newMemberName.trim(), is_creator: false })
+    if (members.some((m) => m.alias.toLowerCase() === cleanName.toLowerCase())) {
+      setAddMemberError(`"${cleanName}" already exists in this clan.`)
+      setTimeout(() => setAddMemberError(''), 3000)
+      return
+    }
+    setAddMemberError('')
+    const { error: insertErr } = await supabase.from('clan_members').insert({ clan_id: clanId, alias: cleanName, is_creator: false })
+    if (insertErr) {
+      setAddMemberError('Failed to add member. Please try again.')
+      setTimeout(() => setAddMemberError(''), 3000)
+      return
+    }
     setNewMemberName('')
     onRefresh()
   }
@@ -272,6 +285,11 @@ export default function Members({ members, balances, memberId, currentMember, cl
             <p className="sec-lbl">Add Member</p>
             <span className="text-[11px] font-mono text-zinc-400">{members.length}/10</span>
           </div>
+          {addMemberError && (
+            <p className="text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+              {addMemberError}
+            </p>
+          )}
           {members.length >= 10 ? (
             <p className="text-xs text-amber-400 font-medium">Maximum member limit reached (10 max per clan)</p>
           ) : (

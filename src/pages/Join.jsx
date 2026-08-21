@@ -10,8 +10,11 @@ export default function Join({ onEnter }) {
   const [searchParams] = useSearchParams()
   const urlCode = searchParams.get('code') || ''
 
+  const isUuidInitial = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(urlCode.trim())
+  const initialCode = isUuidInitial ? urlCode.trim() : urlCode.replace(/\D/g, '').slice(0, 6)
+
   const [step, setStep] = useState('code')
-  const [code, setCode] = useState(urlCode.toUpperCase())
+  const [code, setCode] = useState(initialCode)
   const [clan, setClan] = useState(null)
   const [availableMembers, setAvailableMembers] = useState([])
   const [selectedMemberId, setSelectedMemberId] = useState('')
@@ -37,9 +40,11 @@ export default function Join({ onEnter }) {
   }
 
   useEffect(() => {
-    if (urlCode && urlCode.trim().length >= 6) {
-      setCode(urlCode.trim())
-      verifyCodeByValue(urlCode.trim())
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(urlCode.trim())
+    const clean = isUuid ? urlCode.trim() : urlCode.replace(/\D/g, '').slice(0, 6)
+    if (clean.length >= 6) {
+      setCode(clean)
+      verifyCodeByValue(clean)
     }
   }, [urlCode])
 

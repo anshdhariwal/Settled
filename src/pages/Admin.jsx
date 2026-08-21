@@ -122,11 +122,22 @@ export default function Admin() {
   async function confirmDeleteClan(clanId, clanName) {
     setLoading(true)
     try {
-      await supabase.from('trip_item_shares').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('trip_payments').delete().eq('clan_id', clanId)
+      const { data: clanTrips } = await supabase.from('trips').select('id').eq('clan_id', clanId)
+      const tripIds = (clanTrips || []).map((t) => t.id)
+
+      if (tripIds.length > 0) {
+        const { data: tripItems } = await supabase.from('trip_items').select('id').in('trip_id', tripIds)
+        const itemIds = (tripItems || []).map((i) => i.id)
+
+        if (itemIds.length > 0) {
+          await supabase.from('trip_item_shares').delete().in('item_id', itemIds)
+        }
+        await supabase.from('trip_items').delete().in('trip_id', tripIds)
+        await supabase.from('trip_payments').delete().in('trip_id', tripIds)
+      }
+
       await supabase.from('settlements').delete().eq('clan_id', clanId)
       await supabase.from('general_transactions').delete().eq('clan_id', clanId)
-      await supabase.from('trip_items').delete().neq('id', '00000000-0000-0000-0000-000000000000')
       await supabase.from('trips').delete().eq('clan_id', clanId)
       await supabase.from('clan_members').delete().eq('clan_id', clanId)
       await supabase.from('clans').delete().eq('id', clanId)
@@ -476,7 +487,7 @@ export default function Admin() {
                               <p className="font-semibold text-sm text-white">
                                 {getMemberName(tx.from_person)} ➔ {getMemberName(tx.to_person)}
                               </p>
-                              <p className="text-xs text-zinc-400 font-mono mt-0.5">{tx.note || 'Direct Peer Payment'}</p>
+                              <p className="text-xs text-zinc-400 font-mono mt-0.5">{tx.description || 'Direct Peer Payment'}</p>
                             </div>
                           </div>
 

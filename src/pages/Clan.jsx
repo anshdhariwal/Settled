@@ -259,17 +259,27 @@ export default function Clan({ memberId, onExit, viewOverride }) {
               clanId={clanId}
               memberId={memberId}
               onExit={onExit}
+              onRefresh={loadAllData}
             />
           </div>
         ) : viewOverride === 'tripsummary' || selectedSummaryTrip ? (
           <div className="screen-transition">
             {(() => {
-              const summaryTrip = selectedSummaryTrip || trips.find((t) => t.id === tripId) || (trips.length > 0 ? trips[0] : null)
+              const summaryTrip = selectedSummaryTrip || (tripId ? trips.find((t) => t.id === tripId) : null)
               if (!summaryTrip) {
                 return (
-                  <div className="settled-card p-8 text-center space-y-3">
-                    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p className="text-zinc-400 text-xs font-mono">Syncing trip details...</p>
+                  <div className="settled-card p-8 text-center space-y-4">
+                    <p className="text-zinc-300 text-sm font-semibold">Trip not found</p>
+                    <p className="text-zinc-500 text-xs">The requested trip could not be found or has been deleted.</p>
+                    <button
+                      onClick={() => {
+                        setSelectedSummaryTrip(null)
+                        navigate('/clan')
+                      }}
+                      className="btn btn-s btn-sm text-xs px-4"
+                    >
+                      Back to Dashboard
+                    </button>
                   </div>
                 )
               }
