@@ -66,8 +66,8 @@ export default function Join({ onEnter }) {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanInput)
 
     const query = isUuid
-      ? supabase.from('clans').select('*').eq('id', cleanInput).maybeSingle()
-      : supabase.from('clans').select('*').eq('join_code', cleanInput.toUpperCase()).maybeSingle()
+      ? supabase.from('clans').select('id, name, join_code, created_at').eq('id', cleanInput).maybeSingle()
+      : supabase.from('clans').select('id, name, join_code, created_at').eq('join_code', cleanInput.toUpperCase()).maybeSingle()
 
     const { data: clanData, error: clanError } = await query
 
@@ -216,12 +216,13 @@ export default function Join({ onEnter }) {
           <form onSubmit={(e) => { e.preventDefault(); if (code.length >= 6) handleVerifyCode(); }} className="space-y-4">
             <Field label="Enter 6-Digit Join Code">
               <input
-                className="settled-input text-center tracking-[0.2em] font-mono text-lg uppercase"
+                className="settled-input text-center tracking-[0.2em] font-mono text-lg"
                 value={code}
                 maxLength={6}
-                onChange={(e) => setCode(e.target.value.toUpperCase().trim())}
-                placeholder="e.g. 482910"
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="482910"
                 inputMode="numeric"
+                pattern="[0-9]*"
                 autoFocus
               />
             </Field>

@@ -64,8 +64,8 @@ export default function Clan({ memberId, onExit, viewOverride }) {
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clanId)
     const clanQuery = isUuid
-      ? supabase.from('clans').select('*').eq('id', clanId).maybeSingle()
-      : supabase.from('clans').select('*').eq('join_code', clanId.toUpperCase()).maybeSingle()
+      ? supabase.from('clans').select('id, name, join_code, created_at').eq('id', clanId).maybeSingle()
+      : supabase.from('clans').select('id, name, join_code, created_at').eq('join_code', clanId.toUpperCase()).maybeSingle()
 
     const clanRes = await clanQuery
 
