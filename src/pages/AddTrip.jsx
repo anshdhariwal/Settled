@@ -233,7 +233,9 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
   }
 
   function handleHeaderBack() {
-    if (step === 'payments') {
+    if (step === 'pre_settlements') {
+      setStep('payments')
+    } else if (step === 'payments') {
       setStep('items')
     } else {
       navigate(`/clan/${clanId}`)
@@ -247,7 +249,13 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
           <IconChevronLeft className="w-5 h-5" />
         </button>
         <h2 className="ph-title">
-          {step === 'payments' ? 'Payment Breakdown' : (editingTrip ? 'Edit Buy Trip' : 'New Buy Trip (Itemized)')}
+          {step === 'pre_settlements'
+            ? 'Direct Pre-Settlements'
+            : step === 'payments'
+            ? 'Payment Breakdown'
+            : editingTrip
+            ? 'Edit Buy Trip'
+            : 'New Buy Trip (Itemized)'}
         </h2>
       </div>
 
@@ -607,13 +615,13 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex-1 settled-input p-0 flex items-center overflow-hidden">
-                <span className="pl-3 pr-1 text-zinc-400 font-mono text-xs select-none">₹</span>
+              <div className="flex-1 min-w-0 settled-input p-0 flex items-center overflow-hidden">
+                <span className="pl-3 pr-1 text-zinc-400 font-mono text-xs select-none shrink-0">₹</span>
                 <input
                   placeholder="Transfer Amount"
                   inputMode="decimal"
                   maxLength={7}
-                  className="flex-1 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 py-1.5 pr-2"
+                  className="flex-1 min-w-0 bg-transparent outline-none font-mono text-xs text-white placeholder:text-zinc-500 py-1.5 pr-2"
                   value={psAmount}
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9.]/g, '')
@@ -623,7 +631,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
               </div>
               <button
                 type="button"
-                className="btn btn-s text-xs px-3 py-1.5 shrink-0 flex items-center gap-1"
+                className="btn btn-s text-xs px-3.5 py-1.5 shrink-0 !w-auto flex items-center gap-1"
                 onClick={addPreSettlement}
               >
                 <IconPlus className="w-3.5 h-3.5" />

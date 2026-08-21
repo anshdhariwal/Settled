@@ -168,7 +168,7 @@ export default function Join({ onEnter }) {
 
     if (creator) {
       onEnter(clan.id, creator.id)
-      navigate(`/clan/${clan.id}`)
+      navigate(`/clan/${clan.id}`, { state: { toast: `Successfully authenticated as: ${creator.alias || 'Leader'}` } })
     } else {
       const { data: newLeader } = await supabase
         .from('clan_members')
@@ -176,7 +176,7 @@ export default function Join({ onEnter }) {
         .select()
         .single()
       onEnter(clan.id, newLeader.id)
-      navigate(`/clan/${clan.id}`)
+      navigate(`/clan/${clan.id}`, { state: { toast: `Successfully authenticated as: ${newLeader?.alias || 'Leader'}` } })
     }
   }
 

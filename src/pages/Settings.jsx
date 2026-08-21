@@ -47,7 +47,7 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
       textArea.select()
       document.execCommand('copy')
       document.body.removeChild(textArea)
-    } catch (e) {}
+    } catch (e) { }
   }
 
   function handleCopyCode() {
@@ -67,6 +67,11 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
   async function disbandClan() {
     if (confirmDisband !== 'DELETE') return
     await supabase.from('clans').delete().eq('id', clanId)
+    onExit()
+    navigate('/')
+  }
+
+  function handleLogout() {
     onExit()
     navigate('/')
   }
@@ -111,16 +116,30 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
       </div>
 
       <div className="space-y-2 pt-2">
+        <p className="sec-lbl">Session & Account</p>
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4 flex items-center justify-between gap-4">
+          <div className="min-w-0 flex-1 text-left">
+            <p className="font-semibold text-sm text-white">Log Out</p>
+            <p className="text-xs text-zinc-400">Exits session from this device. Your clan remains safe.</p>
+          </div>
+          <button className="btn btn-s btn-sm shrink-0 w-auto px-4 flex items-center gap-1.5" onClick={handleLogout}>
+            <IconLogOut className="w-3.5 h-3.5 text-zinc-300" />
+            <span>Log Out</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-2 pt-2">
         <p className="sec-lbl">Danger Zone</p>
         <div className="rounded-xl border border-[rgba(240,136,62,0.35)] bg-zinc-950/60 divide-y divide-zinc-800/80 overflow-hidden">
           <div className="p-4 flex items-center justify-between gap-4">
             <div className="min-w-0 flex-1 text-left">
               <p className="font-semibold text-sm text-white">Leave Clan</p>
-              <p className="text-xs text-zinc-400">Exit this clan. You can rejoin anytime with the code.</p>
+              <p className="text-xs text-zinc-400">Exit this clan and mark your profile inactive.</p>
             </div>
             <button className="btn btn-s btn-sm shrink-0 w-auto px-4 flex items-center gap-1.5" onClick={() => setShowLeaveModal(true)}>
-              <IconLogOut className="w-3.5 h-3.5 text-zinc-400" />
-              <span>Leave Clan</span>
+              <IconLogOut className="w-3.5 h-3.5 text-rose-400" />
+              <span className="text-rose-300">Leave Clan</span>
             </button>
           </div>
 
@@ -157,7 +176,7 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
       </div>
 
       {showLeaveModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
           <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-zinc-700/60 action-sheet text-left">
             <div className="space-y-1.5">
               <h3 className="font-bold text-base text-white">Leave Clan?</h3>

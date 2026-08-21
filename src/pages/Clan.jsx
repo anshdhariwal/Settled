@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { calculateBalances } from '../lib/calculateBalances'
 import { Shell } from '../components/layout'
@@ -29,6 +29,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
   const { clanId: paramClanId, tripId } = useParams()
   const clanId = paramClanId || localStorage.getItem('settled_clan_id')
   const navigate = useNavigate()
+  const location = useLocation()
   const [selectedSummaryTrip, setSelectedSummaryTrip] = useState(null)
 
   const [clan, setClan] = useState(null)
@@ -50,6 +51,13 @@ export default function Clan({ memberId, onExit, viewOverride }) {
     setToastMsg(msg)
     setTimeout(() => setToastMsg(''), 3000)
   }
+
+  useEffect(() => {
+    if (location.state?.toast) {
+      triggerToast(location.state.toast)
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
 
   async function loadAllData() {
     if (!clanId) return
@@ -212,7 +220,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
             <img src="/logo.svg" alt="Settled Logo" className="h-7 object-contain shrink-0" />
             <div className="w-px h-7 bg-zinc-700/60 shrink-0" aria-hidden="true" />
             <div className="min-w-0 flex-1">
-              <h1 className="font-bold text-sm tracking-tight text-white truncate max-w-[130px] sm:max-w-[220px]" title={clan.name}>
+              <h1 className="font-bold text-sm tracking-tight text-white truncate max-w-[180px] sm:max-w-[320px]" title={clan.name}>
                 {clan.name}
               </h1>
               <p className="text-[11px] text-zinc-500 truncate">Member: <span className="text-zinc-300 font-medium">{currentMember?.alias || 'You'}</span></p>
@@ -220,14 +228,6 @@ export default function Clan({ memberId, onExit, viewOverride }) {
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={handleCopyJoinCode}
-              className="p-2 sm:px-2.5 sm:py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-blue-400 hover:bg-zinc-800 transition-colors flex items-center gap-1.5 shrink-0"
-              title={`Copy Join Code: ${clan.join_code}`}
-            >
-              {copiedCode ? <IconSuccessTick className="w-4 h-4 text-emerald-400" /> : <IconCopy className="w-4 h-4 text-blue-400" />}
-              <span className="hidden sm:inline">{clan.join_code}</span>
-            </button>
             <button
               onClick={handleShareJoinLink}
               className="p-2 sm:px-2.5 sm:py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-[11px] font-semibold transition-colors flex items-center gap-1.5 shrink-0"
