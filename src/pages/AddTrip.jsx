@@ -252,10 +252,10 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
           {step === 'pre_settlements'
             ? 'Direct Pre-Settlements'
             : step === 'payments'
-            ? 'Payment Breakdown'
-            : editingTrip
-            ? 'Edit Buy Trip'
-            : 'New Buy Trip (Itemized)'}
+              ? 'Payment Breakdown'
+              : editingTrip
+                ? 'Edit Buy Trip'
+                : 'New Buy Trip (Itemized)'}
         </h2>
       </div>
 
@@ -301,9 +301,8 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
                   </button>
                 )}
               </div>
-              <div className={`rounded-xl border border-zinc-800 bg-zinc-900/60 transition-all duration-200 overflow-y-auto custom-scrollbar ${
-                expandedItemsArea ? 'max-h-92' : 'max-h-46'
-              }`}>
+              <div className={`rounded-xl border border-zinc-800 bg-zinc-900/60 transition-all duration-200 overflow-y-auto custom-scrollbar ${expandedItemsArea ? 'max-h-92' : 'max-h-46'
+                }`}>
                 {itemDrafts.map((it, idx) => {
                   const isEditingThis = editingItemIdx === idx
 
@@ -384,11 +383,10 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
                                         setEditItemShare([...editItemShare, p.id])
                                       }
                                     }}
-                                    className={`cursor-pointer transition-colors ${
-                                      isSelected
+                                    className={`cursor-pointer transition-colors ${isSelected
                                         ? 'text-white font-semibold'
                                         : 'text-zinc-500 line-through opacity-50 hover:opacity-90'
-                                    }`}
+                                      }`}
                                     title={`Click to ${isSelected ? 'exclude' : 'include'} ${p.alias}`}
                                   >
                                     {p.alias}
@@ -581,7 +579,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
           <div className="space-y-1">
             <p className="sec-lbl text-xs font-bold text-zinc-200">Direct Pre-Settlements (Optional)</p>
             <p className="text-xs text-zinc-400">
-              Did anyone already pay someone back directly for this trip before calculating the summary?
+              Did anyone already pay someone back directly before calculating the summary?
             </p>
           </div>
 

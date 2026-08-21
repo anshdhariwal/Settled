@@ -12,7 +12,7 @@ import {
 import { formatINR } from '../lib/formatINR'
 import { calculateBalances } from '../lib/calculateBalances'
 
-export default function TripSummary({ trip, items, shares, payments, members, clanId, onBack }) {
+export default function TripSummary({ trip, items, shares, payments, settlements = [], members, clanId, onBack }) {
   const navigate = useNavigate()
   const [copiedSummary, setCopiedSummary] = useState(false)
   const [showPayers, setShowPayers] = useState(false)

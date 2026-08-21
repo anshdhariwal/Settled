@@ -276,6 +276,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   items={items}
                   shares={shares}
                   payments={payments}
+                  settlements={settlements}
                   members={members}
                   clanId={clanId}
                   onBack={() => {
