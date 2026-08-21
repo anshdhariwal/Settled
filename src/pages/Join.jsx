@@ -158,13 +158,31 @@ export default function Join({ onEnter }) {
       return
     }
 
-    // Find existing creator member
-    const { data: creator } = await supabase
+    // Find existing creator member (first created active leader)
+    const { data: creators } = await supabase
       .from('clan_members')
       .select('*')
       .eq('clan_id', clan.id)
       .eq('is_creator', true)
-      .maybeSingle()
+      .eq('deleted', false)
+      .order('created_at', { ascending: true })
+
+    let creator = creators && creators.length > 0 ? creators[0] : null
+
+    if (!creator) {
+      const { data: firstMembers } = await supabase
+        .from('clan_members')
+        .select('*')
+        .eq('clan_id', clan.id)
+        .eq('deleted', false)
+        .order('created_at', { ascending: true })
+        .limit(1)
+
+      if (firstMembers && firstMembers.length > 0) {
+        creator = firstMembers[0]
+        await supabase.from('clan_members').update({ is_creator: true }).eq('id', creator.id)
+      }
+    }
 
     if (creator) {
       onEnter(clan.id, creator.id)
