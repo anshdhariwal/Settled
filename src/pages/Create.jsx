@@ -232,7 +232,7 @@ export default function Create({ onEnter }) {
           <h2 className="ph-title">Create a Clan</h2>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); if (memberInput.trim()) { addMemberTag(memberInput); setMemberInput(''); } else { handleCreateClan(); } }} className="space-y-4">
           <Field label="Clan Name">
             <input
               className="settled-input"
@@ -312,17 +312,17 @@ export default function Create({ onEnter }) {
               )}
             </div>
           </Field>
-        </div>
 
-        {error && (
-          <p className="toast-msg text-rose-400 text-xs font-medium bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
-            {error}
-          </p>
-        )}
+          {error && (
+            <p className="toast-msg text-rose-400 text-xs font-medium bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
+              {error}
+            </p>
+          )}
 
-        <button disabled={loading} className="btn btn-p" onClick={handleCreateClan}>
-          {loading ? 'Creating...' : 'Create Clan'}
-        </button>
+          <button type="submit" disabled={loading} className="btn btn-p">
+            {loading ? 'Creating...' : 'Create Clan'}
+          </button>
+        </form>
       </div>
     </Shell>
   )

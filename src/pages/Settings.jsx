@@ -89,17 +89,17 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
 
       <div className="space-y-4">
         <Field label="Clan Name">
-          <div className="flex gap-2">
+          <form onSubmit={(e) => { e.preventDefault(); saveClanName(); }} className="flex gap-2">
             <input className="settled-input flex-1" value={clanName} maxLength={24} onChange={(e) => setClanName(e.target.value)} />
-            <button className="btn btn-s btn-sm shrink-0 w-auto px-4" onClick={saveClanName}>Save</button>
-          </div>
+            <button type="submit" className="btn btn-s btn-sm shrink-0 w-auto px-4">Save</button>
+          </form>
         </Field>
 
         <Field label="Your Name / Alias">
-          <div className="flex gap-2">
+          <form onSubmit={(e) => { e.preventDefault(); saveAlias(); }} className="flex gap-2">
             <input className="settled-input flex-1" value={alias} maxLength={12} onChange={(e) => setAlias(e.target.value)} />
-            <button className="btn btn-s btn-sm shrink-0 w-auto px-4" onClick={saveAlias}>Save</button>
-          </div>
+            <button type="submit" className="btn btn-s btn-sm shrink-0 w-auto px-4">Save</button>
+          </form>
         </Field>
 
         <Field label="Shareable Join Code">

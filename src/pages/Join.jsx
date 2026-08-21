@@ -191,7 +191,7 @@ export default function Join({ onEnter }) {
         </div>
 
         {step === 'code' && (
-          <div className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); if (code.length >= 6) handleVerifyCode(); }} className="space-y-4">
             <Field label="Enter 6-Character Join Code">
               <input
                 className="settled-input text-center tracking-[0.2em] font-mono text-lg uppercase"
@@ -208,14 +208,14 @@ export default function Join({ onEnter }) {
               </p>
             )}
             <button
+              type="submit"
               disabled={loading || code.length < 6}
               className="btn btn-p disabled:opacity-40"
-              onClick={handleVerifyCode}
             >
               <span>{loading ? 'Finding Clan...' : 'Next'}</span>
               <IconChevronRight className="w-4 h-4 text-zinc-950" />
             </button>
-          </div>
+          </form>
         )}
 
         {step === 'select_identity' && (
@@ -320,7 +320,7 @@ export default function Join({ onEnter }) {
 
       {showLeaderModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-amber-500/40 action-sheet text-left">
+          <form onSubmit={(e) => { e.preventDefault(); handleVerifyLeaderDob(); }} className="w-full max-w-sm settled-card p-5 space-y-4 border border-amber-500/40 action-sheet text-left">
             <div className="space-y-1.5">
               <h3 className="font-bold text-base text-white">Leader Access Verification</h3>
               <p className="text-xs text-zinc-400">
@@ -350,17 +350,17 @@ export default function Join({ onEnter }) {
             )}
 
             <div className="flex gap-2 pt-1">
-              <button className="btn btn-s flex-1 text-xs" onClick={() => setShowLeaderModal(false)}>
+              <button type="button" className="btn btn-s flex-1 text-xs" onClick={() => setShowLeaderModal(false)}>
                 Cancel
               </button>
               <button
+                type="submit"
                 className="btn btn-p flex-1 text-xs font-semibold bg-amber-400 text-zinc-950 hover:bg-amber-300"
-                onClick={handleVerifyLeaderDob}
               >
                 Verify
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </Shell>

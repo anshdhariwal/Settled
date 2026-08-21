@@ -37,7 +37,7 @@ export default function AddGeneral({ people, clanId }) {
         <h2 className="ph-title">New General Transaction</h2>
       </div>
 
-      <div className="space-y-4">
+      <form onSubmit={(e) => { e.preventDefault(); if (!saving && amount && fromPerson !== toPerson) save(); }} className="space-y-4">
         <Field label="Date">
           <input type="date" className="settled-input" value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
@@ -83,13 +83,13 @@ export default function AddGeneral({ people, clanId }) {
         </Field>
 
         <button
+          type="submit"
           disabled={saving || !amount || fromPerson === toPerson}
           className="btn btn-p disabled:opacity-40"
-          onClick={save}
         >
           {saving ? 'Saving...' : 'Save General Transaction'}
         </button>
-      </div>
+      </form>
     </div>
   )
 }

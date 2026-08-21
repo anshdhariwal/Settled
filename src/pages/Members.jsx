@@ -260,7 +260,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
           {members.length >= 10 ? (
             <p className="text-xs text-amber-400 font-medium">Maximum member limit reached (10 max per clan)</p>
           ) : (
-            <div className="flex gap-2">
+            <form onSubmit={(e) => { e.preventDefault(); handleAddMember(); }} className="flex gap-2">
               <input
                 className="settled-input flex-1"
                 value={newMemberName}
@@ -268,18 +268,18 @@ export default function Members({ members, balances, memberId, currentMember, cl
                 onChange={(e) => setNewMemberName(e.target.value)}
                 placeholder="Enter member name"
               />
-              <button onClick={handleAddMember} className="btn btn-p btn-sm px-4 flex items-center gap-1.5 shrink-0 w-auto">
+              <button type="submit" className="btn btn-p btn-sm px-4 flex items-center gap-1.5 shrink-0 w-auto">
                 <IconPlus className="w-3.5 h-3.5 text-zinc-950" />
                 <span>Add</span>
               </button>
-            </div>
+            </form>
           )}
         </div>
       )}
 
       {showLeaderModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full max-w-sm settled-card p-5 space-y-4 border border-amber-500/40 action-sheet text-left">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 action-sheet-bg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+          <form onSubmit={(e) => { e.preventDefault(); handleVerifyLeaderDob(); }} className="w-full max-w-sm settled-card p-5 space-y-4 border border-amber-500/40 action-sheet text-left">
             <div className="space-y-1.5">
               <h3 className="font-bold text-base text-white">Leader Access Verification</h3>
               <p className="text-xs text-zinc-400">
@@ -310,17 +310,17 @@ export default function Members({ members, balances, memberId, currentMember, cl
             )}
 
             <div className="flex gap-2 pt-1">
-              <button className="btn btn-s flex-1 text-xs" onClick={() => setShowLeaderModal(false)}>
+              <button type="button" className="btn btn-s flex-1 text-xs" onClick={() => setShowLeaderModal(false)}>
                 Cancel
               </button>
               <button
+                type="submit"
                 className="btn btn-p flex-1 text-xs font-semibold bg-amber-400 text-zinc-950 hover:bg-amber-300"
-                onClick={handleVerifyLeaderDob}
               >
                 Verify
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>

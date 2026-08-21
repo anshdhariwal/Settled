@@ -553,6 +553,12 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
                         next[idx] = { ...next[idx], amount: val }
                         setPayDrafts(next)
                       }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (payTotal === itemTotal && itemDrafts.length > 0) setStep('pre_settlements')
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -624,6 +630,13 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9.]/g, '')
                     setPsAmount(val)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (psAmount && Number(psAmount) > 0) addPreSettlement()
+                      else if (!saving) save()
+                    }
                   }}
                 />
               </div>
