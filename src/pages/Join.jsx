@@ -38,6 +38,7 @@ export default function Join({ onEnter }) {
 
   useEffect(() => {
     if (urlCode && urlCode.trim().length >= 6) {
+      setCode(urlCode.trim())
       verifyCodeByValue(urlCode.trim())
     }
   }, [urlCode])
@@ -270,7 +271,6 @@ export default function Join({ onEnter }) {
                             </div>
                             <div>
                               <p className="font-semibold text-sm text-white">{member.alias}</p>
-                              <p className="text-[11px] text-zinc-400">Claim identity</p>
                             </div>
                           </div>
                           {isSelected ? (
