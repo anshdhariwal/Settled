@@ -246,7 +246,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
               <span className="hidden sm:inline">Share</span>
             </button>
             <button
-              onClick={() => navigate(viewOverride === 'settings' ? `/clan/${clanId}` : `/clan/${clanId}/settings`)}
+              onClick={() => navigate(viewOverride === 'settings' ? '/clan' : '/clan/settings')}
               className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800/60 transition-colors shrink-0"
               title="Settings"
             >
@@ -290,7 +290,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   clanId={clanId}
                   onBack={() => {
                     setSelectedSummaryTrip(null)
-                    navigate(`/clan/${clanId}`)
+                    navigate('/clan')
                   }}
                 />
               )
@@ -356,9 +356,9 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   payments={payments}
                   generalTx={generalTx}
                   getMemberName={getMemberName}
-                  onViewSummary={(trip) => {
+                  onViewTrip={(trip) => {
                     setSelectedSummaryTrip(trip)
-                    navigate(`/clan/${clanId}/trip/${trip.id}`)
+                    navigate(`/clan/trip/${trip.id}`)
                   }}
                   onEditTrip={(trip) => {
                     const tripItems = items.filter((it) => it.trip_id === trip.id).map((it) => ({
@@ -370,7 +370,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                     const tripPayments = payments.filter((p) => p.trip_id === trip.id)
                     const tripPreSettlements = settlements.filter((s) => s.trip_id === trip.id)
                     setEditingTrip({ id: trip.id, place: trip.place, date: trip.date, items: tripItems, payments: tripPayments, pre_settlements: tripPreSettlements })
-                    navigate(`/clan/${clanId}/add-trip`)
+                    navigate('/clan/add-trip')
                   }}
                   onDeleteTrip={async (id) => {
                     const tripItems = items.filter((i) => i.trip_id === id)
@@ -437,7 +437,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                 className="w-full p-3.5 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 transition-colors flex items-center justify-between text-left"
                 onClick={() => {
                   setShowActionModal(false)
-                  navigate(`/clan/${clanId}/add-trip`)
+                  navigate('/clan/add-trip')
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -456,7 +456,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                 className="w-full p-3.5 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 transition-colors flex items-center justify-between text-left"
                 onClick={() => {
                   setShowActionModal(false)
-                  navigate(`/clan/${clanId}/add-general`)
+                  navigate('/clan/add-general')
                 }}
               >
                 <div className="flex items-center gap-3">

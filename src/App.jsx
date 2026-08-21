@@ -89,16 +89,17 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={clanId && memberId ? <Navigate to={`/clan/${clanId}`} replace /> : <Landing />} />
+        <Route path="/" element={clanId && memberId ? <Navigate to="/clan" replace /> : <Landing />} />
         <Route path="/create" element={<Create onEnter={enterClan} />} />
         <Route path="/join" element={<Join onEnter={enterClan} />} />
 
-        <Route path="/clan/:clanId" element={<Clan memberId={memberId} onExit={exitClan} />} />
-        <Route path="/clan/:clanId/settings" element={<Clan memberId={memberId} onExit={exitClan} viewOverride="settings" />} />
-        <Route path="/clan/:clanId/add-trip" element={<Clan memberId={memberId} onExit={exitClan} viewOverride="addtrip" />} />
-        <Route path="/clan/:clanId/add-general" element={<Clan memberId={memberId} onExit={exitClan} viewOverride="addgeneral" />} />
-        <Route path="/clan/:clanId/trip/:tripId" element={<Clan memberId={memberId} onExit={exitClan} viewOverride="tripsummary" />} />
+        <Route path="/clan" element={clanId && memberId ? <Clan memberId={memberId} onExit={exitClan} /> : <Navigate to="/" replace />} />
+        <Route path="/clan/settings" element={clanId && memberId ? <Clan memberId={memberId} onExit={exitClan} viewOverride="settings" /> : <Navigate to="/" replace />} />
+        <Route path="/clan/add-trip" element={clanId && memberId ? <Clan memberId={memberId} onExit={exitClan} viewOverride="addtrip" /> : <Navigate to="/" replace />} />
+        <Route path="/clan/add-general" element={clanId && memberId ? <Clan memberId={memberId} onExit={exitClan} viewOverride="addgeneral" /> : <Navigate to="/" replace />} />
+        <Route path="/clan/trip/:tripId" element={clanId && memberId ? <Clan memberId={memberId} onExit={exitClan} viewOverride="tripsummary" /> : <Navigate to="/" replace />} />
 
+        <Route path="/clan/:legacyClanId/*" element={<Navigate to="/clan" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

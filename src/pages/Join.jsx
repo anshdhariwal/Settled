@@ -119,14 +119,14 @@ export default function Join({ onEnter }) {
         return
       }
       onEnter(clan.id, newMember.id)
-      navigate(`/clan/${clan.id}`)
+      navigate('/clan')
     } else {
       if (!selectedMemberId) {
         showToastError('Please select your name.')
         return
       }
       onEnter(clan.id, selectedMemberId)
-      navigate(`/clan/${clan.id}`)
+      navigate('/clan')
     }
   }
 
@@ -190,7 +190,7 @@ export default function Join({ onEnter }) {
 
     if (creator) {
       onEnter(clan.id, creator.id)
-      navigate(`/clan/${clan.id}`, { state: { toast: `Successfully authenticated as: ${creator.alias || 'Leader'}` } })
+      navigate('/clan', { state: { toast: `Successfully authenticated as: ${creator.alias || 'Leader'}` } })
     } else {
       const { data: newLeader } = await supabase
         .from('clan_members')
@@ -198,7 +198,7 @@ export default function Join({ onEnter }) {
         .select()
         .single()
       onEnter(clan.id, newLeader.id)
-      navigate(`/clan/${clan.id}`, { state: { toast: `Successfully authenticated as: ${newLeader?.alias || 'Leader'}` } })
+      navigate('/clan', { state: { toast: `Successfully authenticated as: ${newLeader?.alias || 'Leader'}` } })
     }
   }
 

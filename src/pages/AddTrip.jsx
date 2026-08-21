@@ -224,7 +224,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
       }
 
       if (onDoneEditing) onDoneEditing()
-      navigate(`/clan/${clanId}/trip/${tripId}`)
+      navigate(`/clan/trip/${tripId}`)
     } catch (err) {
       console.error('Error during trip save:', err)
     } finally {
@@ -238,7 +238,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
     } else if (step === 'payments') {
       setStep('items')
     } else {
-      navigate(`/clan/${clanId}`)
+      navigate('/clan')
     }
   }
 

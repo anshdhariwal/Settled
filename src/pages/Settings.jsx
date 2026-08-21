@@ -80,7 +80,7 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
   return (
     <div className="settled-card p-6 space-y-6">
       <div className="ph">
-        <button onClick={() => navigate(`/clan/${clanId}`)} className="back-btn" title="Back">
+        <button onClick={() => navigate('/clan')} className="back-btn" title="Back">
           <IconChevronLeft className="w-5 h-5" />
         </button>
         <h2 className="ph-title">Clan Settings</h2>

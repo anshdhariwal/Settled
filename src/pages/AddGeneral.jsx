@@ -25,13 +25,13 @@ export default function AddGeneral({ people, clanId }) {
       amount: Number(amount),
     })
     setSaving(false)
-    navigate(`/clan/${clanId}`)
+    navigate('/clan')
   }
 
   return (
     <div className="settled-card p-6 space-y-5">
       <div className="ph">
-        <button onClick={() => navigate(`/clan/${clanId}`)} className="back-btn" title="Back">
+        <button onClick={() => navigate('/clan')} className="back-btn" title="Back">
           <IconChevronLeft className="w-5 h-5" />
         </button>
         <h2 className="ph-title">New General Transaction</h2>

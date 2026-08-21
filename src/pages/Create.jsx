@@ -208,7 +208,7 @@ export default function Create({ onEnter }) {
             onClick={() => {
               sessionStorage.removeItem(PENDING_KEY)
               onEnter(result.clanId, result.memberId)
-              navigate(`/clan/${result.clanId}`)
+              navigate('/clan')
             }}
           >
             <span>Enter App</span>
