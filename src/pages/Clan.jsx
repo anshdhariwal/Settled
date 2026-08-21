@@ -61,22 +61,31 @@ export default function Clan({ memberId, onExit, viewOverride }) {
 
   async function loadAllData() {
     if (!clanId) return
-    const [clanRes, membersRes, tripsRes, itemsRes, sharesRes, paymentsRes, generalTxRes, settlementsRes] = await Promise.all([
-      supabase.from('clans').select('*').eq('id', clanId).maybeSingle(),
-      supabase.from('clan_members').select('*').eq('clan_id', clanId).eq('deleted', false).order('created_at'),
-      supabase.from('trips').select('*').eq('clan_id', clanId).order('date', { ascending: false }),
-      supabase.from('trip_items').select('*'),
-      supabase.from('trip_item_shares').select('*'),
-      supabase.from('trip_payments').select('*'),
-      supabase.from('general_transactions').select('*').eq('clan_id', clanId).order('date', { ascending: false }),
-      supabase.from('settlements').select('*').eq('clan_id', clanId),
-    ])
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clanId)
+    const clanQuery = isUuid
+      ? supabase.from('clans').select('*').eq('id', clanId).maybeSingle()
+      : supabase.from('clans').select('*').eq('join_code', clanId.toUpperCase()).maybeSingle()
+
+    const clanRes = await clanQuery
 
     if (!clanRes.data) {
       onExit()
       navigate('/')
       return
     }
+
+    const targetClanId = clanRes.data.id
+
+    const [membersRes, tripsRes, itemsRes, sharesRes, paymentsRes, generalTxRes, settlementsRes] = await Promise.all([
+      supabase.from('clan_members').select('*').eq('clan_id', targetClanId).eq('deleted', false).order('created_at'),
+      supabase.from('trips').select('*').eq('clan_id', targetClanId).order('date', { ascending: false }),
+      supabase.from('trip_items').select('*'),
+      supabase.from('trip_item_shares').select('*'),
+      supabase.from('trip_payments').select('*'),
+      supabase.from('general_transactions').select('*').eq('clan_id', targetClanId).order('date', { ascending: false }),
+      supabase.from('settlements').select('*').eq('clan_id', targetClanId),
+    ])
 
     const activeMembers = membersRes.data || []
     const validMember = activeMembers.find((m) => m.id === memberId)

@@ -61,11 +61,15 @@ export default function Join({ onEnter }) {
     }
     setError('')
     setLoading(true)
-    const { data: clanData, error: clanError } = await supabase
-      .from('clans')
-      .select('*')
-      .eq('join_code', targetCode.toUpperCase().trim())
-      .maybeSingle()
+
+    const cleanInput = targetCode.trim()
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanInput)
+
+    const query = isUuid
+      ? supabase.from('clans').select('*').eq('id', cleanInput).maybeSingle()
+      : supabase.from('clans').select('*').eq('join_code', cleanInput.toUpperCase()).maybeSingle()
+
+    const { data: clanData, error: clanError } = await query
 
     if (clanError || !clanData) {
       setLoading(false)
