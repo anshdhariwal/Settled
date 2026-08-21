@@ -1,11 +1,9 @@
-import { IconClose } from './icons'
+import { createPortal } from 'react-dom'
 
 export default function Modal({
   isOpen,
   onClose,
   title = 'Confirm Action',
-  icon: Icon = null,
-  iconColor = 'text-rose-400',
   children,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
@@ -15,28 +13,28 @@ export default function Modal({
 }) {
   if (!isOpen) return null
 
-  return (
-    <div className="settled-modal-backdrop animate-fade-in">
-      <div className={`settled-modal-card settled-card p-6 space-y-4 text-left border ${danger ? 'border-rose-500/30' : 'border-zinc-800'}`}>
-        <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
-          <h3 className="font-bold text-base text-white flex items-center gap-2">
-            {Icon ? <Icon className={`w-4 h-4 ${iconColor}`} /> : danger ? <span className="text-rose-400">⚠️</span> : null}
-            <span>{title}</span>
+  const modalContent = (
+    <div
+      className="settled-modal-backdrop animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div className="settled-modal-card settled-card p-6 space-y-4 text-left border border-zinc-800 rounded-2xl bg-zinc-950/95 shadow-2xl">
+        <div className="space-y-2">
+          <h3 className="font-dotted text-xl sm:text-2xl text-white font-medium tracking-wide leading-snug">
+            {title}
           </h3>
-          <button onClick={onClose} className="back-btn" title="Close">
-            <IconClose className="w-4 h-4" />
-          </button>
+          <div className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+            {children}
+          </div>
         </div>
 
-        <div className="space-y-2 text-sm text-zinc-300">
-          {children}
-        </div>
-
-        <div className="flex items-center justify-end gap-2.5 pt-2">
+        <div className="flex items-center gap-3 pt-2 w-full">
           <button
             type="button"
             onClick={onClose}
-            className="btn btn-s text-xs px-4 py-2"
+            className="btn btn-s flex-1 !py-3 !text-sm font-semibold rounded-xl"
           >
             {cancelText}
           </button>
@@ -44,7 +42,7 @@ export default function Modal({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className={`btn ${danger ? 'btn-danger' : 'btn-p'} text-xs px-4 py-2 disabled:opacity-50`}
+            className={`btn ${danger ? 'btn-danger' : 'btn-p'} flex-1 !py-3 !text-sm font-bold rounded-xl disabled:opacity-50`}
           >
             {loading ? 'Processing...' : confirmText}
           </button>
@@ -52,4 +50,6 @@ export default function Modal({
       </div>
     </div>
   )
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent
 }

@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
@@ -90,6 +91,31 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
   const [psFrom, setPsFrom] = useState(people[0]?.id || '')
   const [psTo, setPsTo] = useState(people[1]?.id || '')
   const [psAmount, setPsAmount] = useState('')
+
+  useEffect(() => {
+    if (editingTrip) {
+      setDate(editingTrip.date || new Date().toISOString().slice(0, 10))
+      setPlace(editingTrip.place || '')
+      setItemDrafts(
+        editingTrip.items ? editingTrip.items.map((it) => ({ id: it.id, name: it.name, price: Number(it.price), shared_by: it.shared_by || [] })) : []
+      )
+      setPayDrafts(
+        people.map((p) => {
+          const existingPay = editingTrip.payments?.find((pay) => pay.person_id === p.id)
+          return { person_id: p.id, amount: existingPay ? String(existingPay.amount) : '' }
+        })
+      )
+      setPreSettlementDrafts(
+        editingTrip.pre_settlements ? editingTrip.pre_settlements.map((s) => ({ from_person: s.from_person, to_person: s.to_person, amount: String(s.amount) })) : []
+      )
+    } else {
+      setDate(new Date().toISOString().slice(0, 10))
+      setPlace('')
+      setItemDrafts([])
+      setPayDrafts(people.map((p) => ({ person_id: p.id, amount: '' })))
+      setPreSettlementDrafts([])
+    }
+  }, [editingTrip, people])
 
   function addPreSettlement() {
     if (!psFrom || !psTo || psFrom === psTo || !psAmount || Number(psAmount) <= 0) {
@@ -238,6 +264,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
     } else if (step === 'payments') {
       setStep('items')
     } else {
+      if (onDoneEditing) onDoneEditing()
       navigate('/clan')
     }
   }
@@ -701,21 +728,33 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
         </div>
       )}
 
-      {showConfirmModal && (
-        <div className="settled-modal-backdrop">
-          <div className="settled-modal-card settled-card p-5 space-y-4 border border-zinc-700/60 text-left">
-            <div className="space-y-1.5">
-              <h3 className="font-bold text-base text-white">Proceed to Payment Breakdown?</h3>
-              <p className="text-xs text-zinc-400">
+      {showConfirmModal && typeof document !== 'undefined' && createPortal(
+        <div
+          className="settled-modal-backdrop animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowConfirmModal(false)
+          }}
+        >
+          <div className="settled-modal-card settled-card p-6 space-y-4 text-left border border-zinc-800 rounded-2xl bg-zinc-950/95 shadow-2xl">
+            <div className="space-y-2">
+              <h3 className="font-dotted text-xl sm:text-2xl text-white font-medium tracking-wide leading-snug">
+                Proceed to Payment Breakdown?
+              </h3>
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
                 You have added <strong className="text-white">{itemDrafts.length} item{itemDrafts.length !== 1 ? 's' : ''}</strong> totaling <strong className="text-blue-400 font-mono">₹{formatINR(itemTotal)}</strong>. Have you added all items from your trip?
               </p>
             </div>
-            <div className="flex gap-2 pt-1">
-              <button className="btn btn-s flex-1 text-xs" onClick={() => setShowConfirmModal(false)}>
+            <div className="flex gap-3 pt-2 w-full">
+              <button
+                type="button"
+                className="btn btn-s flex-1 !py-3 !text-sm font-semibold rounded-xl"
+                onClick={() => setShowConfirmModal(false)}
+              >
                 Add More Items
               </button>
               <button
-                className="btn btn-p flex-1 text-xs font-semibold"
+                type="button"
+                className="btn btn-p flex-1 !py-3 !text-sm font-bold rounded-xl"
                 onClick={() => {
                   setShowConfirmModal(false)
                   setStep('payments')
@@ -725,7 +764,8 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

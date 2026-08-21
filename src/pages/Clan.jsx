@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { calculateBalances } from '../lib/calculateBalances'
@@ -302,11 +303,18 @@ export default function Clan({ memberId, onExit, viewOverride }) {
           </div>
         ) : viewOverride === 'addtrip' ? (
           <div className="screen-transition">
-            <AddTrip people={members} personId={memberId} clanId={clanId} editingTrip={editingTrip} onDoneEditing={() => setEditingTrip(null)} />
+            <AddTrip
+              key={editingTrip?.id || 'new-trip'}
+              people={members}
+              personId={memberId}
+              clanId={clanId}
+              editingTrip={editingTrip}
+              onDoneEditing={() => setEditingTrip(null)}
+            />
           </div>
         ) : viewOverride === 'addgeneral' ? (
           <div className="screen-transition">
-            <AddGeneral people={members} clanId={clanId} />
+            <AddGeneral key="new-general" people={members} clanId={clanId} />
           </div>
         ) : (
           <div className="space-y-5 screen-transition">
@@ -430,8 +438,13 @@ export default function Clan({ memberId, onExit, viewOverride }) {
         </div>
       )}
 
-      {showActionModal && (
-        <div className="settled-modal-backdrop">
+      {showActionModal && typeof document !== 'undefined' && createPortal(
+        <div
+          className="settled-modal-backdrop animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowActionModal(false)
+          }}
+        >
           <div className="settled-modal-card settled-card p-5 space-y-4 border border-zinc-700/60 text-left">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
               <h3 className="font-bold text-sm text-white">Add New Entry</h3>
@@ -479,7 +492,8 @@ export default function Clan({ memberId, onExit, viewOverride }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {toastMsg && (
