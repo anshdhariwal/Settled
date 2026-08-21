@@ -17,6 +17,7 @@ import {
   IconClose,
 } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
+import Modal from '../components/Modal'
 
 const ADMIN_PASSCODE_KEY = 'settled_admin_authed'
 // Master admin passcode SHA-256 signature
@@ -493,44 +494,23 @@ export default function Admin() {
         )}
       </main>
 
-      {deletingClan && (
-        <div className="settled-modal-backdrop">
-          <div className="settled-modal-card settled-card p-6 space-y-4 text-left border border-rose-500/30">
-            <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <span className="text-rose-400">⚠️</span> Confirm Delete Clan
-              </h3>
-              <button onClick={() => setDeletingClan(null)} className="back-btn" title="Close">
-                <IconClose className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-sm text-zinc-300">
-                Are you sure you want to delete clan <strong className="text-white">"{deletingClan.name}"</strong>?
-              </p>
-              <p className="text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
-                This will permanently delete all members, trips, items, and settlements in this clan. This action cannot be undone.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
-                onClick={() => setDeletingClan(null)}
-                className="btn btn-s text-xs px-4 py-2"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => confirmDeleteClan(deletingClan.id, deletingClan.name)}
-                className="btn btn-danger text-xs px-4 py-2"
-              >
-                {loading ? 'Deleting...' : 'Permanently Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={Boolean(deletingClan)}
+        onClose={() => setDeletingClan(null)}
+        title="Confirm Delete Clan"
+        confirmText="Permanently Delete"
+        cancelText="Cancel"
+        onConfirm={() => confirmDeleteClan(deletingClan?.id, deletingClan?.name)}
+        loading={loading}
+        danger={true}
+      >
+        <p>
+          Are you sure you want to delete clan <strong className="text-white">"{deletingClan?.name}"</strong>?
+        </p>
+        <p className="text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+          This will permanently delete all members, trips, items, and settlements in this clan. This action cannot be undone.
+        </p>
+      </Modal>
     </div>
   )
 }

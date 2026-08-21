@@ -37,7 +37,18 @@ export default function AddGeneral({ people, clanId }) {
         <h2 className="ph-title">New General Transaction</h2>
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); if (!saving && amount && fromPerson !== toPerson) save(); }} className="space-y-4">
+      {people.length < 2 ? (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs space-y-3">
+          <p className="font-semibold text-sm">Need At Least 2 Members</p>
+          <p className="leading-relaxed text-zinc-300">
+            Direct peer payments require at least two members in the clan (a Payer and a Recipient). Share your clan join code to add another member!
+          </p>
+          <button onClick={() => navigate('/clan')} className="btn btn-s btn-sm text-xs px-4">
+            Back to Dashboard
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={(e) => { e.preventDefault(); if (!saving && amount && fromPerson !== toPerson) save(); }} className="space-y-4">
         <Field label="Date">
           <input type="date" className="settled-input" value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
@@ -90,6 +101,7 @@ export default function AddGeneral({ people, clanId }) {
           {saving ? 'Saving...' : 'Save General Transaction'}
         </button>
       </form>
+      )}
     </div>
   )
 }

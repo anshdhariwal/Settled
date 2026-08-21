@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { IconTrash, IconCart, IconExchange, IconArrowRight, IconAlertTriangle, IconClose } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
+import Modal from '../components/Modal'
 
 export default function History({ trips, items, shares, payments, generalTx, getMemberName, onViewSummary, onEditTrip, onDeleteTrip, onDeleteGeneral }) {
   const [expandedTripId, setExpandedTripId] = useState(null)
@@ -156,38 +157,21 @@ export default function History({ trips, items, shares, payments, generalTx, get
         </div>
       ))}
 
-      {deleteConfirm && (
-        <div className="settled-modal-backdrop">
-          <div className="settled-modal-card settled-card p-5 space-y-4 border border-rose-500/30 text-left">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
-                <IconAlertTriangle className="w-5 h-5" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-bold text-sm text-white">Delete Transaction?</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Are you sure you want to delete <strong className="text-zinc-200">"{deleteConfirm.name}"</strong>? This will permanently update all member balances.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-2 justify-end pt-2 border-t border-zinc-800">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="btn btn-s btn-sm shrink-0 w-auto px-4 text-xs"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="btn btn-sm shrink-0 w-auto px-4 text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white border border-rose-500"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={Boolean(deleteConfirm)}
+        onClose={() => setDeleteConfirm(null)}
+        title="Delete Transaction?"
+        icon={IconAlertTriangle}
+        iconColor="text-rose-400"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        danger={true}
+      >
+        <p className="text-xs text-zinc-300 leading-relaxed">
+          Are you sure you want to delete <strong className="text-white">"{deleteConfirm?.name}"</strong>? This will permanently update all member balances.
+        </p>
+      </Modal>
     </div>
   )
 }

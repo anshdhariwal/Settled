@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { IconPlus, IconTrash, IconPencil, IconCrown, IconKey, IconGripVertical } from '../components/icons'
 import { formatINR, formatDOB, isValidDOB } from '../lib/formatINR'
+import Modal from '../components/Modal'
 
 export default function Members({ members, balances, memberId, currentMember, clanId, onRefresh }) {
   const [newMemberName, setNewMemberName] = useState('')
@@ -277,52 +278,45 @@ export default function Members({ members, balances, memberId, currentMember, cl
         </div>
       )}
 
-      {showLeaderModal && (
-        <div className="settled-modal-backdrop">
-          <form onSubmit={(e) => { e.preventDefault(); handleVerifyLeaderDob(); }} className="settled-modal-card settled-card p-5 space-y-4 border border-amber-500/40 text-left">
-            <div className="space-y-1.5">
-              <h3 className="font-bold text-base text-white">Leader Access Verification</h3>
-              <p className="text-xs text-zinc-400">
-                Enter the Leader Date of Birth (DOB) set during clan creation to claim leader privileges.
-              </p>
-            </div>
+      <Modal
+        isOpen={showLeaderModal}
+        onClose={() => setShowLeaderModal(false)}
+        title="Leader Access Verification"
+        icon={IconKey}
+        iconColor="text-amber-400"
+        confirmText="Verify"
+        cancelText="Cancel"
+        onConfirm={handleVerifyLeaderDob}
+        danger={false}
+      >
+        <div className="space-y-3">
+          <p className="text-xs text-zinc-400">
+            Enter the Leader Date of Birth (DOB) set during clan creation to claim leader privileges.
+          </p>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-zinc-300">Leader DOB (DD-MM-YYYY)</label>
-              <input
-                className={`settled-input font-mono text-center tracking-wider text-base ${shakeDob ? 'field-shake' : ''}`}
-                value={leaderDob}
-                onChange={(e) => {
-                  setLeaderDob(formatDOB(e.target.value))
-                  setLeaderError('')
-                }}
-                placeholder="DD-MM-YYYY"
-                maxLength={10}
-                inputMode="numeric"
-                autoFocus
-              />
-            </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-zinc-300">Leader DOB (DD-MM-YYYY)</label>
+            <input
+              className={`settled-input font-mono text-center tracking-wider text-base ${shakeDob ? 'field-shake' : ''}`}
+              value={leaderDob}
+              onChange={(e) => {
+                setLeaderDob(formatDOB(e.target.value))
+                setLeaderError('')
+              }}
+              placeholder="DD-MM-YYYY"
+              maxLength={10}
+              inputMode="numeric"
+              autoFocus
+            />
+          </div>
 
-            {leaderError && (
-              <p className="text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
-                {leaderError}
-              </p>
-            )}
-
-            <div className="flex gap-2 pt-1">
-              <button type="button" className="btn btn-s flex-1 text-xs" onClick={() => setShowLeaderModal(false)}>
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn btn-p flex-1 text-xs font-semibold bg-amber-400 text-zinc-950 hover:bg-amber-300"
-              >
-                Verify
-              </button>
-            </div>
-          </form>
+          {leaderError && (
+            <p className="text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+              {leaderError}
+            </p>
+          )}
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
 import { IconChevronLeft, IconCopy, IconSuccessTick, IconLogOut, IconAlertTriangle } from '../components/icons'
+import { copyToClipboard } from '../lib/copyToClipboard'
+import Modal from '../components/Modal'
 
 export default function Settings({ clan, currentMember, clanId, memberId, onExit }) {
   const navigate = useNavigate()
@@ -27,33 +29,9 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
     setTimeout(() => setSavedMsg(''), 2000)
   }
 
-  function safeCopy(text) {
-    if (!text) return
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text))
-    } else {
-      fallbackCopy(text)
-    }
-  }
-
-  function fallbackCopy(text) {
-    try {
-      const textArea = document.createElement('textarea')
-      textArea.value = text
-      textArea.style.position = 'fixed'
-      textArea.style.left = '-9999px'
-      textArea.style.top = '-9999px'
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-    } catch (e) { }
-  }
-
   function handleCopyCode() {
     if (!clan?.join_code) return
-    safeCopy(clan.join_code)
+    copyToClipboard(clan.join_code)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -67,7 +45,29 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
 
   async function disbandClan() {
     if (confirmDisband !== 'DELETE') return
-    await supabase.from('clans').delete().eq('id', clanId)
+    try {
+      const { data: clanTrips } = await supabase.from('trips').select('id').eq('clan_id', clanId)
+      const tripIds = (clanTrips || []).map((t) => t.id)
+
+      if (tripIds.length > 0) {
+        const { data: tripItems } = await supabase.from('trip_items').select('id').in('trip_id', tripIds)
+        const itemIds = (tripItems || []).map((i) => i.id)
+
+        if (itemIds.length > 0) {
+          await supabase.from('trip_item_shares').delete().in('item_id', itemIds)
+        }
+        await supabase.from('trip_items').delete().in('trip_id', tripIds)
+        await supabase.from('trip_payments').delete().in('trip_id', tripIds)
+      }
+
+      await supabase.from('settlements').delete().eq('clan_id', clanId)
+      await supabase.from('general_transactions').delete().eq('clan_id', clanId)
+      await supabase.from('trips').delete().eq('clan_id', clanId)
+      await supabase.from('clan_members').delete().eq('clan_id', clanId)
+      await supabase.from('clans').delete().eq('id', clanId)
+    } catch (e) {
+      console.error('Error disbanding clan:', e)
+    }
     onExit()
     navigate('/')
   }
@@ -183,26 +183,19 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
         </div>
       </div>
 
-      {showLeaveModal && (
-        <div className="settled-modal-backdrop">
-          <div className="settled-modal-card settled-card p-5 space-y-4 border border-zinc-700/60 text-left">
-            <div className="space-y-1.5">
-              <h3 className="font-bold text-base text-white">Leave Clan?</h3>
-              <p className="text-xs text-zinc-400">
-                Are you sure you want to leave <strong className="text-white">{clan.name}</strong>? You can rejoin anytime using the join code <span className="font-mono text-blue-400">{clan.join_code}</span>.
-              </p>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <button className="btn btn-s flex-1 text-xs" onClick={() => setShowLeaveModal(false)}>
-                Cancel
-              </button>
-              <button className="btn btn-danger flex-1 text-xs font-semibold" onClick={leaveClan}>
-                Leave Clan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        title="Leave Clan?"
+        confirmText="Leave Clan"
+        cancelText="Cancel"
+        onConfirm={leaveClan}
+        danger={true}
+      >
+        <p className="text-xs text-zinc-300">
+          Are you sure you want to leave <strong className="text-white">{clan.name}</strong>? You can rejoin anytime using the join code <span className="font-mono text-blue-400">{clan.join_code}</span>.
+        </p>
+      </Modal>
     </div>
   )
 }

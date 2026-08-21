@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { calculateBalances } from '../lib/calculateBalances'
+import { copyToClipboard } from '../lib/copyToClipboard'
 import { Shell } from '../components/layout'
 import {
   IconSettings,
@@ -77,12 +78,9 @@ export default function Clan({ memberId, onExit, viewOverride }) {
 
     const targetClanId = clanRes.data.id
 
-    const [membersRes, tripsRes, itemsRes, sharesRes, paymentsRes, generalTxRes, settlementsRes] = await Promise.all([
+    const [membersRes, tripsRes, generalTxRes, settlementsRes] = await Promise.all([
       supabase.from('clan_members').select('*').eq('clan_id', targetClanId).eq('deleted', false).order('created_at'),
       supabase.from('trips').select('*').eq('clan_id', targetClanId).order('date', { ascending: false }),
-      supabase.from('trip_items').select('*'),
-      supabase.from('trip_item_shares').select('*'),
-      supabase.from('trip_payments').select('*'),
       supabase.from('general_transactions').select('*').eq('clan_id', targetClanId).order('date', { ascending: false }),
       supabase.from('settlements').select('*').eq('clan_id', targetClanId),
     ])
@@ -100,13 +98,26 @@ export default function Clan({ memberId, onExit, viewOverride }) {
     }
 
     const validTrips = tripsRes.data || []
-    const validTripIds = new Set(validTrips.map((t) => t.id))
+    const tripIds = validTrips.map((t) => t.id)
 
-    const validItems = (itemsRes.data || []).filter((i) => validTripIds.has(i.trip_id))
-    const validItemIds = new Set(validItems.map((i) => i.id))
+    let validItems = []
+    let validShares = []
+    let validPayments = []
 
-    const validShares = (sharesRes.data || []).filter((sh) => validItemIds.has(sh.item_id))
-    const validPayments = (paymentsRes.data || []).filter((p) => validTripIds.has(p.trip_id))
+    if (tripIds.length > 0) {
+      const [itemsRes, paymentsRes] = await Promise.all([
+        supabase.from('trip_items').select('*').in('trip_id', tripIds),
+        supabase.from('trip_payments').select('*').in('trip_id', tripIds),
+      ])
+      validItems = itemsRes.data || []
+      validPayments = paymentsRes.data || []
+
+      const itemIds = validItems.map((i) => i.id)
+      if (itemIds.length > 0) {
+        const sharesRes = await supabase.from('trip_item_shares').select('*').in('item_id', itemIds)
+        validShares = sharesRes.data || []
+      }
+    }
 
     setClan(clanRes.data)
     setMembers(activeMembers)
@@ -159,33 +170,9 @@ export default function Clan({ memberId, onExit, viewOverride }) {
 
   const currentMember = members.find((m) => m.id === memberId)
 
-  function safeCopy(text) {
-    if (!text) return
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text))
-    } else {
-      fallbackCopy(text)
-    }
-  }
-
-  function fallbackCopy(text) {
-    try {
-      const textArea = document.createElement('textarea')
-      textArea.value = text
-      textArea.style.position = 'fixed'
-      textArea.style.left = '-9999px'
-      textArea.style.top = '-9999px'
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-    } catch (e) {}
-  }
-
   function handleCopyJoinCode() {
     if (!clan?.join_code) return
-    safeCopy(clan.join_code)
+    copyToClipboard(clan.join_code)
     setCopiedCode(true)
     triggerToast('Join code copied to clipboard!')
     setTimeout(() => setCopiedCode(false), 3000)
@@ -201,13 +188,13 @@ export default function Clan({ memberId, onExit, viewOverride }) {
         title: clan.name,
         text: shareText,
       }).catch(() => {
-        safeCopy(shareText)
+        copyToClipboard(shareText)
         setCopiedShareLink(true)
         triggerToast('Share link copied to clipboard!')
         setTimeout(() => setCopiedShareLink(false), 3000)
       })
     } else {
-      safeCopy(shareText)
+      copyToClipboard(shareText)
       setCopiedShareLink(true)
       triggerToast('Share link copied to clipboard!')
       setTimeout(() => setCopiedShareLink(false), 3000)

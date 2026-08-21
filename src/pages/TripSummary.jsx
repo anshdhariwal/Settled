@@ -71,7 +71,8 @@ export default function TripSummary({ trip, items, shares, payments, settlements
     const map = new Map()
 
     tripItems.forEach((it) => {
-      const itemShares = (shares || []).filter((s) => s.item_id === it.id).map((s) => s.person_id).sort()
+      const rawShares = (shares || []).filter((s) => s.item_id === it.id).map((s) => s.person_id).sort()
+      const itemShares = rawShares.length > 0 ? rawShares : members.map((m) => m.id).sort()
       const key = itemShares.join(',')
 
       if (!map.has(key)) {
