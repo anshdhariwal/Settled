@@ -295,6 +295,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   clanId={clanId}
                   onBack={() => {
                     setSelectedSummaryTrip(null)
+                    setActiveTab('trips')
                     navigate('/clan')
                   }}
                 />
@@ -331,7 +332,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                 onClick={() => setActiveTab('trips')}
               >
                 <IconHistory className="w-4 h-4" />
-                <span>Activity ({trips.length + generalTx.length})</span>
+                <span>Activity ({trips.length + generalTx.length + settlements.length})</span>
               </button>
               <button
                 className={`seg-item ${activeTab === 'members' ? 'active' : ''}`}
@@ -369,6 +370,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   shares={shares}
                   payments={payments}
                   generalTx={generalTx}
+                  settlements={settlements}
                   getMemberName={getMemberName}
                   onViewTrip={(trip) => {
                     setSelectedSummaryTrip(trip)
@@ -400,6 +402,10 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   }}
                   onDeleteGeneral={async (id) => {
                     await supabase.from('general_transactions').delete().eq('id', id)
+                    await loadAllData()
+                  }}
+                  onDeleteSettlement={async (id) => {
+                    await supabase.from('settlements').delete().eq('id', id)
                     await loadAllData()
                   }}
                 />

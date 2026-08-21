@@ -1,9 +1,22 @@
 import { useState } from 'react'
-import { IconTrash, IconCart, IconExchange, IconArrowRight, IconAlertTriangle, IconClose } from '../components/icons'
+import { IconTrash, IconCart, IconExchange, IconArrowRight, IconAlertTriangle, IconSuccessTick } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
 import Modal from '../components/Modal'
 
-export default function History({ trips, items, shares, payments, generalTx, getMemberName, onViewTrip, onEditTrip, onDeleteTrip, onDeleteGeneral }) {
+export default function History({
+  trips,
+  items,
+  shares,
+  payments,
+  generalTx,
+  settlements = [],
+  getMemberName,
+  onViewTrip,
+  onEditTrip,
+  onDeleteTrip,
+  onDeleteGeneral,
+  onDeleteSettlement,
+}) {
   const [expandedTripId, setExpandedTripId] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
 
@@ -11,8 +24,10 @@ export default function History({ trips, items, shares, payments, generalTx, get
     if (!deleteConfirm) return
     if (deleteConfirm.type === 'trip') {
       onDeleteTrip(deleteConfirm.id)
-    } else {
+    } else if (deleteConfirm.type === 'general') {
       onDeleteGeneral(deleteConfirm.id)
+    } else if (deleteConfirm.type === 'settlement' && onDeleteSettlement) {
+      onDeleteSettlement(deleteConfirm.id)
     }
     setDeleteConfirm(null)
   }
@@ -21,9 +36,9 @@ export default function History({ trips, items, shares, payments, generalTx, get
     <div className="space-y-4">
       <p className="sec-lbl">Activity History</p>
 
-      {trips.length === 0 && generalTx.length === 0 && (
+      {trips.length === 0 && generalTx.length === 0 && settlements.length === 0 && (
         <div className="settled-card p-8 text-center text-zinc-500 text-xs">
-          No past transactions found.
+          No past transactions or settlements found.
         </div>
       )}
 
@@ -123,6 +138,26 @@ export default function History({ trips, items, shares, payments, generalTx, get
                     </span>
                   ))}
                 </div>
+
+                {(() => {
+                  const tripPreSets = settlements.filter((s) => s.trip_id === trip.id)
+                  if (tripPreSets.length === 0) return null
+                  return (
+                    <>
+                      <p className="font-semibold text-zinc-400 pt-1">Direct Pre-Transfers:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {tripPreSets.map((st) => (
+                          <span key={st.id} className="bg-zinc-900 border border-zinc-800 px-2 py-1 rounded text-[11px] text-zinc-300 flex items-center gap-1.5">
+                            <span className="text-rose-400">{getMemberName(st.from_person)}</span>
+                            <IconArrowRight className="w-3 h-3 text-zinc-500" />
+                            <span className="text-emerald-400">{getMemberName(st.to_person)}</span>
+                            <strong className="text-amber-400 font-mono ml-1">₹{formatINR(st.amount)}</strong>
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )
+                })()}
               </div>
             )}
           </div>
@@ -157,12 +192,42 @@ export default function History({ trips, items, shares, payments, generalTx, get
         </div>
       ))}
 
+      {settlements.filter((st) => !st.trip_id).map((st) => (
+        <div key={st.id} className="settled-card p-4 flex justify-between items-center">
+          <div>
+            <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-medium">
+              <IconSuccessTick className="w-3 h-3 text-emerald-400" />
+              <span>Settlement Payment</span>
+            </span>
+            <p className="text-xs font-semibold text-white mt-1">
+              Direct Settlement
+            </p>
+            <p className="text-[11px] text-zinc-400 flex items-center gap-1.5 mt-0.5">
+              <span className="text-rose-400 font-medium">{getMemberName(st.from_person)}</span>
+              <IconArrowRight className="w-3 h-3 text-zinc-500" />
+              <span className="text-emerald-400 font-medium">{getMemberName(st.to_person)}</span>
+            </p>
+          </div>
+          <div className="text-right flex items-center gap-3">
+            <p className="font-bold font-mono text-emerald-400 text-sm">₹{formatINR(st.amount)}</p>
+            {onDeleteSettlement && (
+              <button
+                onClick={() => setDeleteConfirm({ type: 'settlement', id: st.id, name: `Settlement: ${getMemberName(st.from_person)} ➔ ${getMemberName(st.to_person)} (₹${formatINR(st.amount)})` })}
+                className="icon-btn icon-btn-danger text-zinc-400 p-1"
+                title="Delete Settlement"
+              >
+                <div className="squish"></div>
+                <IconTrash className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+
       <Modal
         isOpen={Boolean(deleteConfirm)}
         onClose={() => setDeleteConfirm(null)}
-        title="Delete Transaction?"
-        icon={IconAlertTriangle}
-        iconColor="text-rose-400"
+        title="Delete Record?"
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={confirmDelete}

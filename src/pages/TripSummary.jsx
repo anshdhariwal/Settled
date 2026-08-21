@@ -132,11 +132,27 @@ export default function TripSummary({ trip, items, shares, payments, settlements
     setTimeout(() => setCopiedSummary(false), 3000)
   }
 
+  const memberPreTransfers = useMemo(() => {
+    const map = {}
+    for (const m of members) map[m.id] = { paid: 0, received: 0, net: 0 }
+    for (const s of tripPreSettlements) {
+      if (s.from_person in map) {
+        map[s.from_person].paid += Number(s.amount)
+        map[s.from_person].net += Number(s.amount)
+      }
+      if (s.to_person in map) {
+        map[s.to_person].received += Number(s.amount)
+        map[s.to_person].net -= Number(s.amount)
+      }
+    }
+    return map
+  }, [members, tripPreSettlements])
+
   function handleBackClick() {
     if (onBack) {
       onBack()
     } else {
-      navigate(`/clan/${clanId}`)
+      navigate('/clan')
     }
   }
 
@@ -145,7 +161,7 @@ export default function TripSummary({ trip, items, shares, payments, settlements
       {/* Header — Clean, no AI capsules */}
       <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
         <div className="flex items-center gap-3">
-          <button onClick={handleBackClick} className="back-btn" title="Back to Clan">
+          <button onClick={handleBackClick} className="back-btn" title="Back to Activity History">
             <IconChevronLeft className="w-5 h-5" />
           </button>
           <div>
@@ -216,13 +232,22 @@ export default function TripSummary({ trip, items, shares, payments, settlements
 
       {/* 3. Per-Person Reconciliation Balance Table */}
       <div className="space-y-3">
-        <p className="sec-lbl text-xs font-bold text-zinc-200">Per-Person Balance Reconciliation</p>
+        <div className="flex items-center justify-between">
+          <p className="sec-lbl text-xs font-bold text-zinc-200">Per-Person Balance Reconciliation</p>
+          {tripPreSettlements.length > 0 && (
+            <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 font-mono">
+              Includes {tripPreSettlements.length} Pre-Transfer{tripPreSettlements.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 overflow-hidden text-xs sm:text-sm">
           <div className="grid grid-cols-12 gap-1.5 px-3.5 py-3 bg-zinc-900 border-b border-zinc-800 text-[11px] sm:text-xs font-bold text-zinc-300 uppercase tracking-wider">
             <span className="col-span-3">Member</span>
-            <span className="col-span-3 text-right">Paid</span>
-            <span className="col-span-3 text-right">Owes</span>
-            <span className="col-span-3 text-right">Net</span>
+            <span className="col-span-2 text-right">Paid</span>
+            <span className="col-span-2 text-right">Owes</span>
+            <span className="col-span-2 text-right">Pre-Trans</span>
+            <span className="col-span-3 text-right">Final Net</span>
           </div>
 
           <div className="divide-y divide-zinc-800/60">
@@ -230,21 +255,31 @@ export default function TripSummary({ trip, items, shares, payments, settlements
               const isPositive = b.net > 0.005
               const isNegative = b.net < -0.005
               const absAmount = formatINR(Math.abs(b.net))
+              const pt = memberPreTransfers[b.person] || { net: 0 }
 
               return (
                 <div key={b.person} className="grid grid-cols-12 gap-1.5 px-3.5 py-3.5 items-center">
                   <span className="col-span-3 font-semibold text-white truncate">
                     {getMemberName(b.person)}
                   </span>
-                  <span className="col-span-3 text-right font-mono text-zinc-300 text-xs sm:text-sm whitespace-nowrap">
-                    ₹ {formatINR(b.paid)}
+                  <span className="col-span-2 text-right font-mono text-zinc-300 text-xs whitespace-nowrap">
+                    ₹{formatINR(b.paid)}
                   </span>
-                  <span className="col-span-3 text-right font-mono text-zinc-300 text-xs sm:text-sm whitespace-nowrap">
-                    ₹ {formatINR(b.owed)}
+                  <span className="col-span-2 text-right font-mono text-zinc-300 text-xs whitespace-nowrap">
+                    ₹{formatINR(b.owed)}
+                  </span>
+                  <span className="col-span-2 text-right font-mono text-xs whitespace-nowrap">
+                    {pt.net > 0.005 ? (
+                      <span className="text-emerald-400">+₹{formatINR(pt.net)}</span>
+                    ) : pt.net < -0.005 ? (
+                      <span className="text-rose-400">-₹{formatINR(Math.abs(pt.net))}</span>
+                    ) : (
+                      <span className="text-zinc-500">₹0</span>
+                    )}
                   </span>
                   <span className="col-span-3 text-right">
                     <span
-                      className={`inline-flex items-center justify-end whitespace-nowrap text-nowrap px-2 py-1 rounded-md font-mono font-bold text-[11px] sm:text-xs ${
+                      className={`inline-flex items-center justify-end whitespace-nowrap text-nowrap px-2 py-1 rounded-md font-mono font-bold text-[11px] ${
                         isPositive
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25'
                           : isNegative
@@ -252,7 +287,7 @@ export default function TripSummary({ trip, items, shares, payments, settlements
                           : 'text-zinc-400 bg-zinc-800/40 border border-zinc-700/40'
                       }`}
                     >
-                      {isPositive ? `+₹ ${absAmount}` : isNegative ? `-₹ ${absAmount}` : 'settled'}
+                      {isPositive ? `+₹${absAmount}` : isNegative ? `-₹${absAmount}` : 'settled'}
                     </span>
                   </span>
                 </div>
