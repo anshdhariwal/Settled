@@ -35,8 +35,8 @@ export function calculateBalances(input) {
   }
 
   for (const tx of general_transactions) {
-    if (tx.to in net) net[tx.to] += tx.amount
-    if (tx.from in net) net[tx.from] -= tx.amount
+    if (tx.to in net) net[tx.to] -= tx.amount
+    if (tx.from in net) net[tx.from] += tx.amount
   }
 
   for (const s of settlements) {

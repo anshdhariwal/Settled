@@ -35,6 +35,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
 
   const [clan, setClan] = useState(null)
   const [members, setMembers] = useState([])
+  const [allMembers, setAllMembers] = useState([])
   const [trips, setTrips] = useState([])
   const [items, setItems] = useState([])
   const [shares, setShares] = useState([])
@@ -78,8 +79,9 @@ export default function Clan({ memberId, onExit, viewOverride }) {
 
     const targetClanId = clanRes.data.id
 
-    const [membersRes, tripsRes, generalTxRes, settlementsRes] = await Promise.all([
+    const [membersRes, allMembersRes, tripsRes, generalTxRes, settlementsRes] = await Promise.all([
       supabase.from('clan_members').select('*').eq('clan_id', targetClanId).eq('deleted', false).order('created_at'),
+      supabase.from('clan_members').select('id, alias, is_creator').eq('clan_id', targetClanId).order('created_at'),
       supabase.from('trips').select('*').eq('clan_id', targetClanId).order('date', { ascending: false }),
       supabase.from('general_transactions').select('*').eq('clan_id', targetClanId).order('date', { ascending: false }),
       supabase.from('settlements').select('*').eq('clan_id', targetClanId),
@@ -121,6 +123,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
 
     setClan(clanRes.data)
     setMembers(activeMembers)
+    setAllMembers(allMembersRes.data || [])
     setTrips(validTrips)
     setItems(validItems)
     setShares(validShares)
@@ -161,11 +164,11 @@ export default function Clan({ memberId, onExit, viewOverride }) {
   }, [members, trips, items, shares, payments, generalTx, settlements])
 
   function getMemberName(id) {
-    const m = members.find((x) => x.id === id)
+    const m = allMembers.find((x) => x.id === id) || members.find((x) => x.id === id)
     if (m) return m.alias
     const creator = members.find((x) => x.is_creator)
     if (creator) return creator.alias
-    return members[0]?.alias || 'Leader'
+    return members[0]?.alias || 'Unknown'
   }
 
   const currentMember = members.find((m) => m.id === memberId)
@@ -328,6 +331,8 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   getMemberName={getMemberName}
                   onSettle={async (from, to, amount) => {
                     await supabase.from('settlements').insert({ clan_id: clanId, from_person: from, to_person: to, amount })
+                    await loadAllData()
+                    triggerToast('Settlement recorded!')
                   }}
                   onGoAddTrip={() => {
                     setEditingTrip(null)

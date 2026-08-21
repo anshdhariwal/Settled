@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { IconPlus, IconTrash, IconPencil, IconCrown, IconKey, IconGripVertical } from '../components/icons'
+import { IconPlus, IconTrash, IconPencil, IconCrown, IconKey, IconGripVertical, IconAlertTriangle } from '../components/icons'
 import { formatINR, formatDOB, isValidDOB } from '../lib/formatINR'
 import Modal from '../components/Modal'
 
@@ -15,6 +15,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
 
   const [draggingId, setDraggingId] = useState(null)
   const [localNonLeaders, setLocalNonLeaders] = useState(null)
+  const [removeMemberConfirm, setRemoveMemberConfirm] = useState(null)
 
   useEffect(() => {
     setLocalNonLeaders(null)
@@ -102,6 +103,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
       setLocalNonLeaders(localNonLeaders.filter((m) => m.id !== id))
     }
     await supabase.from('clan_members').update({ deleted: true }).eq('id', id)
+    setRemoveMemberConfirm(null)
     onRefresh()
   }
 
@@ -235,7 +237,7 @@ export default function Members({ members, balances, memberId, currentMember, cl
                       {!member.is_creator && (
                         <button
                           className="icon-btn text-zinc-400 hover:text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/40 transition-colors p-1"
-                          onClick={() => handleRemoveMember(member.id)}
+                          onClick={() => setRemoveMemberConfirm({ id: member.id, alias: member.alias })}
                           title="Remove member"
                         >
                           <div className="squish"></div>
@@ -328,6 +330,22 @@ export default function Members({ members, balances, memberId, currentMember, cl
             </p>
           )}
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(removeMemberConfirm)}
+        onClose={() => setRemoveMemberConfirm(null)}
+        title="Remove Member?"
+        icon={IconAlertTriangle}
+        iconColor="text-rose-400"
+        confirmText="Remove"
+        cancelText="Cancel"
+        onConfirm={() => handleRemoveMember(removeMemberConfirm?.id)}
+        danger={true}
+      >
+        <p className="text-xs text-zinc-300 leading-relaxed">
+          Remove <strong className="text-white">{removeMemberConfirm?.alias}</strong> from the clan? Their historical transactions will remain, but they will no longer appear as an active member.
+        </p>
       </Modal>
     </div>
   )

@@ -11,6 +11,7 @@ import {
 } from '../components/icons'
 import { formatINR } from '../lib/formatINR'
 import { calculateBalances } from '../lib/calculateBalances'
+import { copyToClipboard } from '../lib/copyToClipboard'
 
 export default function TripSummary({ trip, items, shares, payments, settlements = [], members, clanId, onBack }) {
   const navigate = useNavigate()
@@ -89,7 +90,7 @@ export default function TripSummary({ trip, items, shares, payments, settlements
     })
 
     return Array.from(map.values())
-  }, [tripItems, shares])
+  }, [tripItems, shares, members])
 
   // Generate plain text summary for WhatsApp / clipboard sharing
   function handleCopyTextSummary() {
@@ -125,19 +126,7 @@ export default function TripSummary({ trip, items, shares, payments, settlements
 
     summaryText += `\n*Settled App*`
 
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(summaryText)
-    } else {
-      const textArea = document.createElement('textarea')
-      textArea.value = summaryText
-      textArea.style.position = 'fixed'
-      textArea.style.left = '-9999px'
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-    }
+    copyToClipboard(summaryText)
 
     setCopiedSummary(true)
     setTimeout(() => setCopiedSummary(false), 3000)
