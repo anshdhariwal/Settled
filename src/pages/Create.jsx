@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Shell, Field } from '../components/layout'
-import { IconChevronLeft, IconChevronRight, IconCopy, IconSuccessTick, IconPlus, IconClose } from '../components/icons'
+import { IconChevronLeft, IconChevronRight, IconCopy, IconSuccessTick, IconPlus, IconClose, IconEye, IconEyeOff, IconLock } from '../components/icons'
 import { formatDOB, isValidDOB } from '../lib/formatINR'
 import { copyToClipboard } from '../lib/copyToClipboard'
 
@@ -28,12 +28,24 @@ function getStoredPendingState() {
   return { step: 'form', result: null }
 }
 
+const PASSCODE_MIN_WORDS = 6
+const PASSCODE_MAX_WORDS = 10
+
+function countWords(text) {
+  return text.trim().split(/\s+/).filter(Boolean).length
+}
+
+// strip control chars only; React escapes everything else at render time
+function sanitizePasscode(text) {
+  return text.replace(/[\x00-\x1F\x7F]/g, '')
+}
+
 export default function Create({ onEnter }) {
   const navigate = useNavigate()
   const memberInputRef = useRef(null)
   const pending = getStoredPendingState()
 
-  const [step, setStep] = useState(pending.step)
+  const [step, setStep] = useState(pending.step === 'success' ? 'success' : 'passcode')
   const [result, setResult] = useState(pending.result)
   const [clanName, setClanName] = useState('')
   const [alias, setAlias] = useState('')
@@ -44,6 +56,12 @@ export default function Create({ onEnter }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  // passcode step state
+  const [passcode, setPasscode] = useState('')
+  const [confirmPasscode, setConfirmPasscode] = useState('')
+  const [showPasscode, setShowPasscode] = useState(false)
+  const [showConfirmPasscode, setShowConfirmPasscode] = useState(false)
 
   function triggerDobShake() {
     setShakeDob(true)
@@ -106,13 +124,22 @@ export default function Create({ onEnter }) {
       showToastError('Enter valid DOB (DD-MM-YYYY) between 01-01-1500 and 31-12-2500.')
       return
     }
+    const words = countWords(passcode)
+    if (words < PASSCODE_MIN_WORDS || words > PASSCODE_MAX_WORDS) {
+      showToastError(`Passcode must be ${PASSCODE_MIN_WORDS} to ${PASSCODE_MAX_WORDS} words.`)
+      return
+    }
+    if (passcode !== confirmPasscode) {
+      showToastError('Passcodes do not match.')
+      return
+    }
     setError('')
     setLoading(true)
     const joinCode = generateJoinCode()
     const { data: clanData, error: clanError } = await supabase
       .from('clans')
-      .insert({ name: clanName.trim(), join_code: joinCode, passcode: dob.trim() })
-      .select()
+      .insert({ name: clanName.trim(), join_code: joinCode, passcode: passcode.trim(), leader_dob: dob.trim() })
+      .select('id, name, join_code, created_at')
       .single()
 
     if (clanError) {
@@ -150,6 +177,20 @@ export default function Create({ onEnter }) {
     setResult(createdObj)
     setStep('success')
     setLoading(false)
+  }
+
+  function handlePasscodeSubmit(e) {
+    e.preventDefault()
+    const words = countWords(passcode)
+    if (words < PASSCODE_MIN_WORDS || words > PASSCODE_MAX_WORDS) {
+      showToastError(`Passcode must be ${PASSCODE_MIN_WORDS} to ${PASSCODE_MAX_WORDS} words.`)
+      return
+    }
+    if (passcode !== confirmPasscode) {
+      showToastError('Passcodes do not match.')
+      return
+    }
+    setStep('details')
   }
 
   function handleCopyCode() {
@@ -190,6 +231,86 @@ export default function Create({ onEnter }) {
             <span>Enter App</span>
             <IconChevronRight className="w-4 h-4 text-zinc-950" />
           </button>
+        </div>
+      </Shell>
+    )
+  }
+
+  if (step === 'passcode') {
+    return (
+      <Shell>
+        <div className="settled-card p-5 sm:p-6 space-y-5">
+          <div className="ph">
+            <button onClick={() => setStep('form')} className="back-btn" title="Back">
+              <IconChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="ph-title">Create a Clan</h2>
+          </div>
+
+          <form onSubmit={handlePasscodeSubmit} className="space-y-4">
+            <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800 text-xs text-zinc-400 space-y-1">
+              <p className="flex items-center gap-2 font-semibold text-zinc-200">
+                <IconLock className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                Set a Clan Passcode
+              </p>
+              <p>Everyone who joins your clan will need this passcode along with the join code. Use {PASSCODE_MIN_WORDS} to {PASSCODE_MAX_WORDS} words.</p>
+            </div>
+
+            <Field label="Passcode">
+              <div className="relative">
+                <input
+                  className="settled-input pr-11"
+                  type={showPasscode ? 'text' : 'password'}
+                  value={passcode}
+                  onChange={(e) => setPasscode(sanitizePasscode(e.target.value))}
+                  placeholder={`e.g. purple tiger runs midnight river seven`}
+                  autoComplete="new-password"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasscode(!showPasscode)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  title={showPasscode ? 'Hide passcode' : 'Show passcode'}
+                >
+                  {showPasscode ? <IconEyeOff className="w-4 h-4" /> : <IconEye className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1.5">{countWords(passcode)} / {PASSCODE_MIN_WORDS}-{PASSCODE_MAX_WORDS} words</p>
+            </Field>
+
+            <Field label="Confirm Passcode">
+              <div className="relative">
+                <input
+                  className="settled-input pr-11"
+                  type={showConfirmPasscode ? 'text' : 'password'}
+                  value={confirmPasscode}
+                  onChange={(e) => setConfirmPasscode(sanitizePasscode(e.target.value))}
+                  placeholder="Re-enter your passcode"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPasscode(!showConfirmPasscode)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  title={showConfirmPasscode ? 'Hide passcode' : 'Show passcode'}
+                >
+                  {showConfirmPasscode ? <IconEyeOff className="w-4 h-4" /> : <IconEye className="w-4 h-4" />}
+                </button>
+              </div>
+            </Field>
+
+            {error && (
+              <p className="toast-msg text-rose-400 text-xs font-medium bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
+                {error}
+              </p>
+            )}
+
+            <button type="submit" className="btn btn-p">
+              <span>Continue</span>
+              <IconChevronRight className="w-4 h-4 text-zinc-950" />
+            </button>
+          </form>
         </div>
       </Shell>
     )

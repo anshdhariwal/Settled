@@ -128,12 +128,12 @@ export default function Members({ members, balances, memberId, currentMember, cl
     }
     let isValid = false
     try {
-      const { data: rpcData, error: rpcError } = await supabase.rpc('verify_clan_credentials', {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('verify_leader_dob', {
         p_join_code: joinCode || '',
-        p_passcode: leaderDob.trim(),
+        p_dob: leaderDob.trim(),
       })
-      if (!rpcError && rpcData && rpcData.length > 0) {
-        isValid = Boolean(rpcData[0].is_valid)
+      if (!rpcError && typeof rpcData === 'boolean') {
+        isValid = rpcData
       }
     } catch {
       isValid = false

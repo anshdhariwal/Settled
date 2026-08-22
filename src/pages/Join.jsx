@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Shell, Field } from '../components/layout'
-import { IconChevronLeft, IconChevronRight, IconSuccessTick } from '../components/icons'
+import { IconChevronLeft, IconChevronRight, IconSuccessTick, IconEye, IconEyeOff, IconLock } from '../components/icons'
 import { formatDOB, isValidDOB } from '../lib/formatINR'
 
 export default function Join({ onEnter }) {
@@ -22,6 +22,11 @@ export default function Join({ onEnter }) {
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // join passcode gate state
+  const [joinPasscode, setJoinPasscode] = useState('')
+  const [showJoinPasscode, setShowJoinPasscode] = useState(false)
+  const [passcodeError, setPasscodeError] = useState('')
 
   // Leader DOB verification state
   const [showLeaderModal, setShowLeaderModal] = useState(false)
@@ -53,8 +58,10 @@ export default function Join({ onEnter }) {
       if (isAddingNew && availableMembers.length > 0) {
         setIsAddingNew(false)
       } else {
-        setStep('code')
+        setStep('passcode')
       }
+    } else if (step === 'passcode') {
+      setStep('code')
     } else {
       navigate('/')
     }
@@ -91,6 +98,45 @@ export default function Join({ onEnter }) {
       .eq('is_creator', false)
 
     setClan(clanData)
+    setLoading(false)
+    setStep('passcode')
+  }
+
+  async function handlePasscodeSubmit(e) {
+    e.preventDefault()
+    if (!joinPasscode.trim()) {
+      setPasscodeError('Enter the clan passcode.')
+      return
+    }
+    setPasscodeError('')
+    setLoading(true)
+
+    let isValid = false
+    try {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('verify_clan_credentials', {
+        p_join_code: clan.join_code,
+        p_passcode: joinPasscode.trim(),
+      })
+      if (!rpcError && rpcData && rpcData.length > 0) {
+        isValid = Boolean(rpcData[0].is_valid)
+      }
+    } catch {
+      isValid = false
+    }
+
+    setLoading(false)
+    if (!isValid) {
+      setPasscodeError('Incorrect passcode. Ask your clan leader for it.')
+      return
+    }
+
+    const { data: membersData } = await supabase
+      .from('clan_members')
+      .select('*')
+      .eq('clan_id', clan.id)
+      .eq('deleted', false)
+      .eq('is_creator', false)
+
     setAvailableMembers(membersData || [])
     if (membersData && membersData.length > 0) {
       setSelectedMemberId(membersData[0].id)
@@ -98,7 +144,6 @@ export default function Join({ onEnter }) {
     } else {
       setIsAddingNew(true)
     }
-    setLoading(false)
     setStep('select_identity')
   }
 
@@ -148,17 +193,17 @@ export default function Join({ onEnter }) {
     // Use RPC server-side validation if available, fallback to comparison
     let isValid = false
     try {
-      const { data: rpcData, error: rpcError } = await supabase.rpc('verify_clan_credentials', {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('verify_leader_dob', {
         p_join_code: clan?.join_code || code,
-        p_passcode: leaderDob.trim(),
+        p_dob: leaderDob.trim(),
       })
-      if (!rpcError && rpcData && rpcData.length > 0) {
-        isValid = Boolean(rpcData[0].is_valid)
+      if (!rpcError && typeof rpcData === 'boolean') {
+        isValid = rpcData
       } else {
-        isValid = clan?.passcode ? leaderDob.trim() === clan.passcode : false
+        isValid = clan?.leader_dob ? leaderDob.trim() === clan.leader_dob : false
       }
     } catch {
-      isValid = clan?.passcode ? leaderDob.trim() === clan.passcode : false
+      isValid = clan?.leader_dob ? leaderDob.trim() === clan.leader_dob : false
     }
 
     if (!isValid) {
@@ -243,6 +288,55 @@ export default function Join({ onEnter }) {
               className="btn btn-p disabled:opacity-40"
             >
               <span>{loading ? 'Finding Clan...' : 'Next'}</span>
+              <IconChevronRight className="w-4 h-4 text-zinc-950" />
+            </button>
+          </form>
+        )}
+
+        {step === 'passcode' && clan && (
+          <form onSubmit={handlePasscodeSubmit} className="space-y-4">
+            <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800 text-xs text-zinc-400">
+              Clan: <span className="font-semibold text-white">{clan.name}</span>
+            </div>
+
+            <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800 text-xs text-zinc-400 flex items-start gap-2">
+              <IconLock className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+              <p>This clan is protected. Enter the passcode your leader shared to continue.</p>
+            </div>
+
+            <Field label="Clan Passcode">
+              <div className="relative">
+                <input
+                  className={`settled-input pr-11 ${passcodeError ? 'field-shake' : ''}`}
+                  type={showJoinPasscode ? 'text' : 'password'}
+                  value={joinPasscode}
+                  onChange={(e) => {
+                    setJoinPasscode(e.target.value.replace(/[\x00-\x1F\x7F]/g, ''))
+                    setPasscodeError('')
+                  }}
+                  placeholder="Enter clan passcode"
+                  autoComplete="current-password"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowJoinPasscode(!showJoinPasscode)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  title={showJoinPasscode ? 'Hide passcode' : 'Show passcode'}
+                >
+                  {showJoinPasscode ? <IconEyeOff className="w-4 h-4" /> : <IconEye className="w-4 h-4" />}
+                </button>
+              </div>
+            </Field>
+
+            {passcodeError && (
+              <p className="toast-msg text-rose-400 text-xs font-medium bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
+                {passcodeError}
+              </p>
+            )}
+
+            <button type="submit" disabled={loading} className="btn btn-p disabled:opacity-40">
+              <span>{loading ? 'Verifying...' : 'Unlock Clan'}</span>
               <IconChevronRight className="w-4 h-4 text-zinc-950" />
             </button>
           </form>
