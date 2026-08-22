@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
 import { IconChevronLeft } from '../components/icons'
+import { todayLocal } from '../lib/formatINR'
 
 export default function AddGeneral({ people, clanId }) {
   const navigate = useNavigate()
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(todayLocal())
   const [description, setDescription] = useState('')
   const [fromPerson, setFromPerson] = useState(people[0]?.id || '')
   const [toPerson, setToPerson] = useState(people[1]?.id || '')

@@ -18,7 +18,12 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
 
   async function saveClanName() {
     if (!currentMember?.is_creator) return
-    await supabase.from('clans').update({ name: clanName.trim() }).eq('id', clanId)
+    const { error } = await supabase.from('clans').update({ name: clanName.trim() }).eq('id', clanId)
+    if (error) {
+      setSavedMsg('Failed to update name')
+      setTimeout(() => setSavedMsg(''), 2000)
+      return
+    }
     setSavedMsg('Clan name updated!')
     if (onRefresh) onRefresh()
     setTimeout(() => setSavedMsg(''), 2000)
@@ -26,7 +31,12 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
 
   async function saveAlias() {
     if (!alias.trim()) return
-    await supabase.from('clan_members').update({ alias: alias.trim() }).eq('id', memberId)
+    const { error } = await supabase.from('clan_members').update({ alias: alias.trim() }).eq('id', memberId)
+    if (error) {
+      setSavedMsg('Failed to update alias')
+      setTimeout(() => setSavedMsg(''), 2000)
+      return
+    }
     setSavedMsg('Alias updated!')
     if (onRefresh) onRefresh()
     setTimeout(() => setSavedMsg(''), 2000)
@@ -41,35 +51,25 @@ export default function Settings({ clan, currentMember, clanId, memberId, onExit
 
   async function leaveClan() {
     setShowLeaveModal(false)
-    await supabase.from('clan_members').update({ deleted: true }).eq('id', memberId)
+    const { error } = await supabase.from('clan_members').update({ deleted: true }).eq('id', memberId)
+    if (error) {
+      console.error('Leave clan failed:', error)
+      return
+    }
     onExit()
     navigate('/')
   }
 
   async function disbandClan() {
     if (confirmDisband !== 'DELETE') return
-    try {
-      const { data: clanTrips } = await supabase.from('trips').select('id').eq('clan_id', clanId)
-      const tripIds = (clanTrips || []).map((t) => t.id)
-
-      if (tripIds.length > 0) {
-        const { data: tripItems } = await supabase.from('trip_items').select('id').in('trip_id', tripIds)
-        const itemIds = (tripItems || []).map((i) => i.id)
-
-        if (itemIds.length > 0) {
-          await supabase.from('trip_item_shares').delete().in('item_id', itemIds)
-        }
-        await supabase.from('trip_items').delete().in('trip_id', tripIds)
-        await supabase.from('trip_payments').delete().in('trip_id', tripIds)
-      }
-
-      await supabase.from('settlements').delete().eq('clan_id', clanId)
-      await supabase.from('general_transactions').delete().eq('clan_id', clanId)
-      await supabase.from('trips').delete().eq('clan_id', clanId)
-      await supabase.from('clan_members').delete().eq('clan_id', clanId)
-      await supabase.from('clans').delete().eq('id', clanId)
-    } catch (e) {
-      console.error('Error disbanding clan:', e)
+    const { data, error } = await supabase.rpc('disband_clan_secure', {
+      p_clan_id: clanId,
+      p_member_id: memberId,
+    })
+    if (error || data === false) {
+      console.error('Disband failed:', error)
+      setShowDisband(false)
+      return
     }
     onExit()
     navigate('/')

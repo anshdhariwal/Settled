@@ -157,19 +157,17 @@ export default function Clan({ memberId, onExit, viewOverride }) {
         .map((p) => ({ person: p.person_id, amount: Number(p.amount) })),
     }))
     return calculateBalances({
-      people: members.map((m) => m.id),
+      people: allMembers.map((m) => m.id),
       trips: tripsInput,
       general_transactions: generalTx.map((t) => ({ from: t.from_person, to: t.to_person, amount: Number(t.amount) })),
       settlements: settlements.map((s) => ({ from: s.from_person, to: s.to_person, amount: Number(s.amount) })),
     })
-  }, [members, trips, items, shares, payments, generalTx, settlements])
+  }, [members, allMembers, trips, items, shares, payments, generalTx, settlements])
 
   function getMemberName(id) {
     const m = allMembers.find((x) => x.id === id) || members.find((x) => x.id === id)
     if (m) return m.alias
-    const creator = members.find((x) => x.is_creator)
-    if (creator) return creator.alias
-    return members[0]?.alias || 'Unknown'
+    return 'Unknown member'
   }
 
   const currentMember = members.find((m) => m.id === memberId)
@@ -292,6 +290,7 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   payments={payments}
                   settlements={settlements}
                   members={members}
+                  allMembers={allMembers}
                   clanId={clanId}
                   onBack={() => {
                     setSelectedSummaryTrip(null)
@@ -349,7 +348,8 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                   balances={balances}
                   getMemberName={getMemberName}
                   onSettle={async (from, to, amount) => {
-                    await supabase.from('settlements').insert({ clan_id: clanId, from_person: from, to_person: to, amount })
+                    const { error } = await supabase.from('settlements').insert({ clan_id: clan.id, from_person: from, to_person: to, amount })
+                    if (error) { triggerToast('Failed to record settlement'); return }
                     await loadAllData()
                     triggerToast('Settlement recorded!')
                   }}
@@ -392,20 +392,27 @@ export default function Clan({ memberId, onExit, viewOverride }) {
                     const tripItems = items.filter((i) => i.trip_id === id)
                     const itemIds = tripItems.map((i) => i.id)
                     if (itemIds.length > 0) {
-                      await supabase.from('trip_item_shares').delete().in('item_id', itemIds)
+                      const { error: e1 } = await supabase.from('trip_item_shares').delete().in('item_id', itemIds)
+                      if (e1) { triggerToast('Failed to delete trip items'); return }
                     }
-                    await supabase.from('trip_payments').delete().eq('trip_id', id)
-                    await supabase.from('settlements').delete().eq('trip_id', id)
-                    await supabase.from('trip_items').delete().eq('trip_id', id)
-                    await supabase.from('trips').delete().eq('id', id)
+                    const { error: e2 } = await supabase.from('trip_payments').delete().eq('trip_id', id)
+                    if (e2) { triggerToast('Failed to delete trip payments'); return }
+                    const { error: e3 } = await supabase.from('settlements').delete().eq('trip_id', id)
+                    if (e3) { triggerToast('Failed to delete trip settlements'); return }
+                    const { error: e4 } = await supabase.from('trip_items').delete().eq('trip_id', id)
+                    if (e4) { triggerToast('Failed to delete trip'); return }
+                    const { error: e5 } = await supabase.from('trips').delete().eq('id', id)
+                    if (e5) { triggerToast('Failed to delete trip'); return }
                     await loadAllData()
                   }}
                   onDeleteGeneral={async (id) => {
-                    await supabase.from('general_transactions').delete().eq('id', id)
+                    const { error } = await supabase.from('general_transactions').delete().eq('id', id)
+                    if (error) { triggerToast('Failed to delete transaction'); return }
                     await loadAllData()
                   }}
                   onDeleteSettlement={async (id) => {
-                    await supabase.from('settlements').delete().eq('id', id)
+                    const { error } = await supabase.from('settlements').delete().eq('id', id)
+                    if (error) { triggerToast('Failed to delete settlement'); return }
                     await loadAllData()
                   }}
                 />

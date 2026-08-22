@@ -135,14 +135,22 @@ export default function Create({ onEnter }) {
     }
     setError('')
     setLoading(true)
-    const joinCode = generateJoinCode()
-    const { data: clanData, error: clanError } = await supabase
-      .from('clans')
-      .insert({ name: clanName.trim(), join_code: joinCode, passcode: passcode.trim(), leader_dob: dob.trim() })
-      .select('id, name, join_code, created_at')
-      .single()
+    let clanData = null
+    let clanError = null
+    // retry on the rare join_code unique-constraint collision
+    for (let attempt = 0; attempt < 5 && !clanData; attempt++) {
+      const joinCode = generateJoinCode()
+      const res = await supabase
+        .from('clans')
+        .insert({ name: clanName.trim(), join_code: joinCode, passcode: passcode.trim(), leader_dob: dob.trim() })
+        .select('id, name, join_code, created_at')
+        .single()
+      clanData = res.data
+      clanError = res.error
+      if (clanError && clanError.code !== '23505') break
+    }
 
-    if (clanError) {
+    if (clanError || !clanData) {
       showToastError('Could not create clan. Try again.')
       setLoading(false)
       return
@@ -166,7 +174,7 @@ export default function Create({ onEnter }) {
         .insert(memberList.map((name) => ({ clan_id: clanData.id, alias: name, is_creator: false })))
     }
 
-    const createdObj = { clanId: clanData.id, memberId: creatorMember.id, joinCode }
+    const createdObj = { clanId: clanData.id, memberId: creatorMember.id, joinCode: clanData.join_code }
     try {
       sessionStorage.setItem(PENDING_KEY, JSON.stringify(createdObj))
     } catch (e) {

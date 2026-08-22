@@ -13,7 +13,7 @@ import { formatINR } from '../lib/formatINR'
 import { calculateBalances } from '../lib/calculateBalances'
 import { copyToClipboard } from '../lib/copyToClipboard'
 
-export default function TripSummary({ trip, items, shares, payments, settlements = [], members, clanId, onBack }) {
+export default function TripSummary({ trip, items, shares, payments, settlements = [], members, allMembers = [], clanId, onBack }) {
   const navigate = useNavigate()
   const [copiedSummary, setCopiedSummary] = useState(false)
   const [showPayers, setShowPayers] = useState(false)
@@ -31,11 +31,9 @@ export default function TripSummary({ trip, items, shares, payments, settlements
   }, [tripItems, tripPayments])
 
   function getMemberName(id) {
-    const m = members.find((x) => x.id === id)
+    const m = (allMembers.length > 0 ? allMembers : members).find((x) => x.id === id)
     if (m) return m.alias
-    const creator = members.find((x) => x.is_creator)
-    if (creator) return creator.alias
-    return members[0]?.alias || 'Leader'
+    return 'Unknown member'
   }
 
   // Calculate isolated trip-scoped balances and settlements
@@ -56,7 +54,7 @@ export default function TripSummary({ trip, items, shares, payments, settlements
     ]
 
     return calculateBalances({
-      people: members.map((m) => m.id),
+      people: (allMembers.length > 0 ? allMembers : members).map((m) => m.id),
       trips: tripsInput,
       general_transactions: [],
       settlements: tripPreSettlements.map((s) => ({
@@ -65,7 +63,7 @@ export default function TripSummary({ trip, items, shares, payments, settlements
         amount: Number(s.amount),
       })),
     })
-  }, [members, trip, tripItems, tripPayments, shares, tripPreSettlements])
+  }, [members, allMembers, trip, tripItems, tripPayments, shares, tripPreSettlements])
 
   // Group items by exact share set (e.g. "Ansh, Badal" or "All 5 Members")
   const groupedItems = useMemo(() => {

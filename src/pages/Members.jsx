@@ -106,7 +106,12 @@ export default function Members({ members, balances, memberId, currentMember, cl
 
   async function handleSaveEdit(id) {
     if (!editAlias.trim()) return
-    await supabase.from('clan_members').update({ alias: editAlias.trim() }).eq('id', id)
+    const { error } = await supabase.from('clan_members').update({ alias: editAlias.trim() }).eq('id', id)
+    if (error) {
+      setAddMemberError('Failed to rename member. Please try again.')
+      setTimeout(() => setAddMemberError(''), 3000)
+      return
+    }
     setEditingMemberId(null)
     onRefresh()
   }
@@ -115,7 +120,14 @@ export default function Members({ members, balances, memberId, currentMember, cl
     if (localNonLeaders) {
       setLocalNonLeaders(localNonLeaders.filter((m) => m.id !== id))
     }
-    await supabase.from('clan_members').update({ deleted: true }).eq('id', id)
+    const { data, error } = await supabase.rpc('remove_member_secure', {
+      p_clan_id: clanId,
+      p_actor_member_id: memberId,
+      p_target_member_id: id,
+    })
+    if (error || data === false) {
+      console.error('Remove member failed:', error)
+    }
     setRemoveMemberConfirm(null)
     onRefresh()
   }

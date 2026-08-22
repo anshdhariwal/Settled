@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Field } from '../components/layout'
 import { IconChevronLeft, IconChevronRight, IconTrash, IconPlus, IconCalendar, IconMapPin, IconChevronUp, IconChevronDown, IconPencil, IconSuccessTick, IconArrowRight, IconExchange } from '../components/icons'
-import { formatINR } from '../lib/formatINR'
+import { formatINR, todayLocal } from '../lib/formatINR'
 
 function ShareSelector({ people, selected, onChange, shakeShare }) {
   const allSelected = people.length > 0 && selected.length === people.length
@@ -63,7 +63,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
   const navigate = useNavigate()
   const itemNameInputRef = useRef(null)
   const [step, setStep] = useState('items')
-  const [date, setDate] = useState(editingTrip?.date || new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(editingTrip?.date || todayLocal())
   const [place, setPlace] = useState(editingTrip?.place || '')
   const [itemDrafts, setItemDrafts] = useState(
     editingTrip?.items ? editingTrip.items.map((it) => ({ name: it.name, price: Number(it.price), shared_by: it.shared_by || [] })) : []
@@ -94,7 +94,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
 
   useEffect(() => {
     if (editingTrip) {
-      setDate(editingTrip.date || new Date().toISOString().slice(0, 10))
+      setDate(editingTrip.date || todayLocal())
       setPlace(editingTrip.place || '')
       setItemDrafts(
         editingTrip.items ? editingTrip.items.map((it) => ({ id: it.id, name: it.name, price: Number(it.price), shared_by: it.shared_by || [] })) : []
@@ -109,7 +109,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
         editingTrip.pre_settlements ? editingTrip.pre_settlements.map((s) => ({ from_person: s.from_person, to_person: s.to_person, amount: String(s.amount) })) : []
       )
     } else {
-      setDate(new Date().toISOString().slice(0, 10))
+      setDate(todayLocal())
       setPlace('')
       setItemDrafts([])
       setPayDrafts(people.map((p) => ({ person_id: p.id, amount: '' })))
@@ -135,6 +135,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
   const [saving, setSaving] = useState(false)
   const [shakeFields, setShakeFields] = useState([])
   const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   function startEditingItem(idx) {
     const item = itemDrafts[idx]
@@ -187,19 +188,24 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
     }
     if (itemDrafts.length === 0 || payTotal !== itemTotal) return
     setSaving(true)
+    setSaveError('')
 
     try {
       let tripId = editingTrip?.id
       const creatorId = personId || people[0]?.id
 
       if (editingTrip) {
-        await supabase.from('trips').update({ date, place: place.trim(), created_by: creatorId }).eq('id', editingTrip.id)
+        const { error: updErr } = await supabase.from('trips').update({ date, place: place.trim(), created_by: creatorId }).eq('id', editingTrip.id)
+        if (updErr) throw updErr
         const existingItemIds = (editingTrip.items || []).map((i) => i.id).filter(Boolean)
         if (existingItemIds.length > 0) {
-          await supabase.from('trip_item_shares').delete().in('item_id', existingItemIds)
+          const { error: delErr } = await supabase.from('trip_item_shares').delete().in('item_id', existingItemIds)
+          if (delErr) throw delErr
         }
-        await supabase.from('trip_payments').delete().eq('trip_id', editingTrip.id)
-        await supabase.from('trip_items').delete().eq('trip_id', editingTrip.id)
+        const { error: payDelErr } = await supabase.from('trip_payments').delete().eq('trip_id', editingTrip.id)
+        if (payDelErr) throw payDelErr
+        const { error: itemDelErr } = await supabase.from('trip_items').delete().eq('trip_id', editingTrip.id)
+        if (itemDelErr) throw itemDelErr
       } else {
         const { data: trip, error: tripErr } = await supabase
           .from('trips')
@@ -208,8 +214,7 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
           .single()
 
         if (tripErr || !trip) {
-          console.error('Error inserting trip:', tripErr)
-          return
+          throw tripErr || new Error('Trip insert returned no data')
         }
         tripId = trip.id
       }
@@ -222,23 +227,27 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
           .single()
 
         if (itemErr || !item) {
-          console.error('Error inserting item:', itemErr)
-          continue
+          throw itemErr || new Error('Item insert returned no data')
         }
-        await supabase.from('trip_item_shares').insert(it.shared_by.map((pid) => ({ item_id: item.id, person_id: pid })))
+        if (it.shared_by.length > 0) {
+          const { error: shareErr } = await supabase.from('trip_item_shares').insert(it.shared_by.map((pid) => ({ item_id: item.id, person_id: pid })))
+          if (shareErr) throw shareErr
+        }
       }
 
       const realPayments = payDrafts.filter((p) => Number(p.amount) > 0)
       if (realPayments.length > 0) {
-        await supabase.from('trip_payments').insert(realPayments.map((p) => ({ trip_id: tripId, person_id: p.person_id, amount: Number(p.amount) })))
+        const { error: payErr } = await supabase.from('trip_payments').insert(realPayments.map((p) => ({ trip_id: tripId, person_id: p.person_id, amount: Number(p.amount) })))
+        if (payErr) throw payErr
       }
 
       if (editingTrip) {
-        await supabase.from('settlements').delete().eq('trip_id', editingTrip.id)
+        const { error: psDelErr } = await supabase.from('settlements').delete().eq('trip_id', editingTrip.id)
+        if (psDelErr) throw psDelErr
       }
       const validPreSettlements = preSettlementDrafts.filter((s) => Number(s.amount) > 0)
       if (validPreSettlements.length > 0) {
-        await supabase.from('settlements').insert(
+        const { error: psErr } = await supabase.from('settlements').insert(
           validPreSettlements.map((s) => ({
             clan_id: clanId,
             trip_id: tripId,
@@ -247,12 +256,14 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
             amount: Number(s.amount),
           }))
         )
+        if (psErr) throw psErr
       }
 
       if (onDoneEditing) onDoneEditing()
       navigate(`/clan/trip/${tripId}`)
     } catch (err) {
       console.error('Error during trip save:', err)
+      setSaveError('Failed to save trip. Check your connection and try again - nothing was lost, the form is still here.')
     } finally {
       setSaving(false)
     }
@@ -713,6 +724,12 @@ export default function AddTrip({ people, clanId, personId, editingTrip, onDoneE
                 })}
               </div>
             </div>
+          )}
+
+          {saveError && (
+            <p className="toast-msg text-rose-400 text-xs font-medium bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
+              {saveError}
+            </p>
           )}
 
           <div className="flex gap-2 pt-2">
